@@ -74,7 +74,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ###############################################################################
 
 # 设置默认的构建类型为Release
-# Set a default configuration if none was specified
+# 将变量声明为CACHE，可以将变量的值缓存起来，以便在下一次CMake配置时保持不变。
+# 在set命令中使用FORCE关键字，可以强制设置变量的值，覆盖任何已经存在的缓存值。
+# 如果变量已经被缓存，并且没有使用FORCE关键字，那么后续的set操作将不会改变该变量的值。
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	message(STATUS "No release type specified. Setting to 'Release'.")
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
