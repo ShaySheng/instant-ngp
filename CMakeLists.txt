@@ -1,10 +1,7 @@
-# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
+# 版权所有（C）2021-2022年，NVIDIA CORPORATION。保留所有权利。
+# NVIDIA CORPORATION及其许可方保留此软件、相关文档及其任何修改
+# 的所有知识产权和专有权。未经NVIDIA CORPORATION明确许可协议的
+# 书面同意，严禁使用、复制、披露或分发本软件和相关文档。
 
 # 设置CMake的最低版本要求为3.18
 cmake_minimum_required(VERSION 3.18)
@@ -79,7 +76,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # 如果变量已经被缓存，并且没有使用FORCE关键字，那么后续的set操作将不会改变该变量的值。
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	message(STATUS "No release type specified. Setting to 'Release'.")
+	# 初始化了CMAKE_BUILD_TYPE这个变量
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+	# set_property用于限定属性的作用域，也就是让CMAKE_BUILD_TYPE只能在后面的三者中取值
 	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo")
 endif()
 
@@ -97,14 +96,28 @@ if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/CMakeLists.txt")
 endif()
 
 # 设置苹果系统下的RPATH
+# RPATH，即Runtime Path，即运行时搜索路径
+# 在苹果操作系统上运行一个程序时，它可能会依赖于其他的库文件。
+# 为了确保程序能够找到这些库文件，需要设置一个运行时搜索路径。
+# 通过这个RPATH路径，程序就能够找到所需的库文件，而不必担心它们是否位于默认位置。
 if (APPLE)
 	set(CMAKE_MACOSX_RPATH ON)
 endif()
 
-# 设置MSVC编译器的编译选项
+# 若使用MSVC编译器（Microsoft Visual C++）的情况
+# /D_CRT_SECURE_NO_WARNINGS：这个选项用于禁止警告相关于使用不安全的函数（如strcpy、sprintf等）。
+# 通过设置这个选项，编译器将不会产生与这些函数相关的警告信息。
+# /MP24：这个选项用于启用并行编译，允许使用多个处理器核心并行地编译源文件。
+# /MP24表示使用24个并行编译任务。这可以加快编译速度。
 if (MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP24")
+# 其他编译器（非MSVC）
+# -fms-extensions：这个选项用于启用编译器对Microsoft特定的扩展语法的支持。
+# 这样可以在源代码中使用一些Microsoft特有的语法和功能。
+# -fPIC：这个选项用于生成与位置无关的代码（Position Independent Code），
+# 以便在共享库（动态链接库）中使用。它是一种编译选项，使得生成的代码可以在内存中的任意位置加载和执行，
+# 而不依赖于特定的内存地址。这对于共享库的使用非常重要。
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
@@ -112,6 +125,10 @@ endif()
 
 # 设置C++标准为C++14
 set(CMAKE_CXX_STANDARD 14)
+# 用于控制不启用 C++ 扩展
+# C++ 扩展是一些与标准 C++ 不兼容的语言特性或语法，
+# 它们通常是由编译器提供的特定扩展。
+# 禁用 C++ 扩展有助于提高代码的可移植性和标准符合性。
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 ###############################################################################
@@ -121,18 +138,59 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # 设置CUDA编译器的标准为CUDA 14
 set(CMAKE_CUDA_STANDARD 14)
+# 要求必须使用指定的 CUDA 标准版本，否则报错
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+# 不启用 CUDA 扩展
 set(CMAKE_CUDA_EXTENSIONS OFF)
+# 指定在链接 CUDA 库时使用的关键字
+# PRIVATE：表示将库作为私有依赖项进行链接。
+# 私有依赖项只对当前目标有效，不会传递给依赖该目标的其他目标。
+# INTERFACE：表示将库作为接口依赖项进行链接。
+# 接口依赖项只会传递给依赖该目标的其他目标，而不会在当前目标中使用。
+# PUBLIC：表示将库作为公共依赖项进行链接。
+# 公共依赖项既会对当前目标生效，也会传递给依赖该目标的其他目标。
 set(CUDA_LINK_LIBRARIES_KEYWORD PUBLIC)
+# CUDA 运行时库的选项
+# CUDA Driver API 提供了对底层 CUDA 驱动程序功能的直接访问。
+# CUDA Runtime Library 是一个高级的编程接口，封装了 CUDA Driver API。
+# Shared 选项表示将 CUDA 运行时库配置为共享库（Shared Library）的形式。
+# 共享库是一种可在多个程序中共享使用的库形式，它可以在运行时被动态加载和链接。
+# 减小可执行文件的大小；节省内存空间；动态加载和链接
+# Static：表示使用静态库形式的 CUDA 运行时库。
+# 静态库是编译时将库代码嵌入到可执行文件中的库形式，
+# 使得可执行文件在运行时不需要依赖外部的 CUDA 运行时库文件。
+# None：表示不使用 CUDA 运行时库。
+# 这意味着 CUDA 程序必须通过显式地加载和管理 CUDA 运行时功能，
+# 例如使用 CUDA Driver API 进行编程。
 set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
 
 # 针对不同编译器设置CUDA编译选项
+# list是一个用于处理列表的命令，用于添加、删除、获取和修改列表中的元素。
+# 添加元素到列表：list(APPEND my_list element1 element2 element3)
+# 获取列表的长度：list(LENGTH my_list length)
+# 获取列表中指定位置的元素：list(GET my_list index output_variable)
+# 删除列表中的元素：list(REMOVE_ITEM my_list element)
+# 替换列表中的元素：list(REPLACE my_list index new_element)
+# 迭代列表中的元素：
+# foreach(element IN LISTS my_list)
+#     # 使用元素执行操作
+#     ...
+# endforeach()
+# NVCC（NVIDIA CUDA Compiler）是 NVIDIA 
+# 提供的用于编译和构建 CUDA C/C++ 代码的编译器。
+
 if (MSVC)
+	# 大型项目时，MSVC 默认的对象文件格式可能会导致链接错误。
+	# 这是由于 MSVC 对象文件格式所支持的符号表大小有限制。
 	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=/bigobj")
 else()
+	# 禁止显示浮点数转换的警告。
 	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-Wno-float-conversion")
+	# 禁用严格别名规则，允许不同类型的指针相互转换。
 	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fno-strict-aliasing")
+	# 启用 Microsoft 扩展，允许使用一些 MSVC 特定的语法扩展。
 	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fms-extensions")
+	# 生成位置无关代码，用于支持共享库的编译。
 	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fPIC")
 endif()
 list(APPEND CUDA_NVCC_FLAGS "--extended-lambda")
