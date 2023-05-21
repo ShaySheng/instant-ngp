@@ -516,28 +516,47 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR})
 
 # 获取CUDA编译器的路径
+# get_filename_component(<VAR> <FileName> <COMPONENT> [<CACHE>])
+# 此函数用于获取文件路径的指定部分
 get_filename_component(CUDA_COMPILER_BIN "${CMAKE_CUDA_COMPILER}" DIRECTORY)
 
 # 如果构建选项为NGP_OPTIX，则添加optix_program目标
 if (NGP_OPTIX)
+    # 添加optix_program目标库
+    # 在add_library中，你需要指定要编译为库的源文件列表，
+    #   可以通过指定多个源文件路径来实现。
+    #   源文件可以是.cpp、.c、.cxx、.cc、.cu等格式。
     add_library(optix_program OBJECT
         src/optix/pathescape.cu
         src/optix/raystab.cu
         src/optix/raytrace.cu
     )
 
+    # 设置optix_program目标的属性
+    # 通过set_target_properties函数，你可以设置目标的各种属性。
+    #   例如输出路径、编译选项、依赖项等。
     set_target_properties(optix_program PROPERTIES CUDA_PTX_COMPILATION ON CUDA_ARCHITECTURES OFF)
+    # 设置optix_program目标的编译定义和编译选项
+    # target_compile_definitions命令用于为目标添加编译定义（宏定义）
+    # 宏定义（Macro Definition）是一种预处理指令：
+    #   宏定义可以在代码中定义一些常量、条件编译开关或简化代码的片段，
+    #   以便在编译时进行替换。
     target_compile_definitions(optix_program PUBLIC ${NGP_DEFINITIONS} -DTCNN_MIN_GPU_ARCH=0)
+    # target_compile_options命令用于为目标添加编译选项
+    # 放宽对 CUDA constexpr 函数的限制
     target_compile_options(optix_program PUBLIC "--expt-relaxed-constexpr")
 
+    # 获取tiny-cuda-nn目标库的包含目录
     get_target_property(TCNN_INCLUDE_DIRECTORIES tiny-cuda-nn INCLUDE_DIRECTORIES)
+    # 设置optix_program目标的包含目录
     target_include_directories(optix_program PUBLIC ${NGP_INCLUDE_DIRECTORIES} ${TCNN_INCLUDE_DIRECTORIES})
 
-    # OptiX programs will be compiled as PTX and packaged
-    # as headers to be included from the binary dir.
+    # OptiX程序将被编译为PTX并打包为头文件，以便从二进制目录中包含
     list(APPEND NGP_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
     set(OPTIX_PTX_HEADER ${CMAKE_CURRENT_BINARY_DIR}/optix_ptx.h)
 
+    # 查找bin2c工具：用于将二进制文件转换为 C 语言数组的形式。
+    #   它将二进制文件的内容读取并生成一个包含字节数据的 C 数组
     find_program(bin_to_c NAMES bin2c PATHS ${CUDA_COMPILER_BIN})
     if (NOT bin_to_c)
         message(FATAL_ERROR
@@ -547,77 +566,157 @@ if (NGP_OPTIX)
         )
     endif()
 
+    # 添加自定义命令，用于将 PTX 文件转换为 C 头文件
     add_custom_command(
-        OUTPUT "${OPTIX_PTX_HEADER}"
-        COMMAND ${CMAKE_COMMAND}
-        "-DBIN_TO_C_COMMAND=${bin_to_c}"
-        "-DOBJECTS=$<TARGET_OBJECTS:optix_program>"
-        "-DOUTPUT=${OPTIX_PTX_HEADER}"
-        -P ${PROJECT_SOURCE_DIR}/cmake/bin2c_wrapper.cmake
-        VERBATIM
-        DEPENDS optix_program
-        COMMENT "Converting PTX files to a C header"
+        OUTPUT "${OPTIX_PTX_HEADER}" 
+        # 指定输出文件路径为 OPTIX_PTX_HEADER 变量所表示的路径
+        COMMAND ${CMAKE_COMMAND} 
+        # 指定要执行的命令为 CMake 命令
+        "-DBIN_TO_C_COMMAND=${bin_to_c}" 
+        # 定义一个名为 BIN_TO_C_COMMAND 的 CMake 变量，
+        #   值为 bin_to_c 变量的值
+        "-DOBJECTS=$<TARGET_OBJECTS:optix_program>" 
+        # 定义一个名为 OBJECTS 的 CMake 变量，
+        #   值为 optix_program 目标的对象文件列表
+        "-DOUTPUT=${OPTIX_PTX_HEADER}" 
+        # 定义一个名为 OUTPUT 的 CMake 变量，
+        #   值为 OPTIX_PTX_HEADER 变量的值
+        -P ${PROJECT_SOURCE_DIR}/cmake/bin2c_wrapper.cmake 
+        # 指定要执行的脚本为 bin2c_wrapper.cmake
+        VERBATIM # 以原样传递命令行参数给命令
+        DEPENDS optix_program 
+        # 声明此自定义命令依赖于 optix_program 目标
+        COMMENT "Converting PTX files to a C header" 
+        # 在构建过程中显示的注释信息
     )
 
+    # 将生成的 C 头文件添加到 NGP_SOURCES 列表中
     list(APPEND NGP_SOURCES ${OPTIX_PTX_HEADER})
 endif()
 
-# 添加ngp目标
+# 添加 ngp 静态库目标
 add_library(ngp STATIC ${NGP_SOURCES})
+
+# 设置 ngp 目标的属性
+# target 是指构建系统中的一个构建目标（Target），
+#   代表着生成的可执行文件、库文件或其他构建产物
 set_target_properties(ngp PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON CUDA_SEPARABLE_COMPILATION ON)
+# 设置 CUDA_RESOLVE_DEVICE_SYMBOLS 属性为 ON，
+#   表示在链接阶段解析 CUDA 设备符号
+# 设置 CUDA_SEPARABLE_COMPILATION 属性为 ON，
+#   启用可分离编译，可以单独编译每个源文件
+
+# # 为 ngp 目标设置编译定义
 target_compile_definitions(ngp PUBLIC ${NGP_DEFINITIONS})
+# 为 ngp 目标添加公共的编译定义，将 NGP_DEFINITIONS 变量中的定义传递给目标
+# PUBLIC 关键字表示这些定义将在使用 ngp 目标的其他目标中可见
+
+# 为 ngp 目标设置编译选项
 target_compile_options(ngp PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_NVCC_FLAGS}>)
+# 为 ngp 目标添加公共的编译选项，对于 CUDA 语言，
+#   使用 CUDA_NVCC_FLAGS 变量中的选项
+# $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_NVCC_FLAGS}> 是 CMake 的 
+#   generator expression，用于指定只对 CUDA 语言生效的选项
+
+# 为 ngp 目标设置包含目录
 target_include_directories(ngp PUBLIC ${NGP_INCLUDE_DIRECTORIES})
+# 为 ngp 目标添加公共的包含目录，
+#   将 NGP_INCLUDE_DIRECTORIES 变量中的目录传递给目标
+# PUBLIC 关键字表示这些目录将在使用 ngp 目标的其他目标中可见
+
+# 为 ngp 目标设置链接目录
 target_link_directories(ngp PUBLIC ${NGP_LINK_DIRECTORIES})
+# 为 ngp 目标添加公共的链接目录，
+#   将 NGP_LINK_DIRECTORIES 变量中的目录传递给目标
+# PUBLIC 关键字表示这些目录将在使用 ngp 目标的其他目标中可见
+
+# 为 ngp 目标设置链接的库
 target_link_libraries(ngp PUBLIC ${NGP_LIBRARIES} tiny-cuda-nn)
+# 为 ngp 目标添加公共的链接库，
+#   将 NGP_LIBRARIES 和 tiny-cuda-nn 传递给目标
+# PUBLIC 关键字表示这些库将在使用 ngp 目标的其他目标中可见
 
 # 如果构建选项为NGP_VULKAN，则将共享库复制到二进制目录
-# Copy shared libraries to the binary directory as needed
 if (NGP_VULKAN)
+    # 设置NGX_BUILD_DIR变量，根据构建配置选择dev或rel文件夹
     set(NGX_BUILD_DIR "$<IF:$<CONFIG:Debug>,dev,rel>")
     if (MSVC)
+        # 设置NGX_SHARED_LIB变量为Windows平台下的共享库路径
         set(NGX_SHARED_LIB "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Windows_x86_64/${NGX_BUILD_DIR}/nvngx_dlss.dll")
     else()
+        # 设置NGX_SHARED_LIB变量为Linux平台下的共享库路径
         set(NGX_SHARED_LIB "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Linux_x86_64/${NGX_BUILD_DIR}/libnvidia-ngx-dlss.so.*")
     endif()
-
+    
+    # 添加自定义命令，向目标 ngp 添加一个自定义命令。
+    # 该命令将在 ngp 目标构建完成后执行。
+    # 将共享库复制到二进制目录
     add_custom_command(TARGET ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${NGX_SHARED_LIB}" "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_EXPAND_LISTS)
+    # COMMAND_EXPAND_LISTS 是一个选项，
+    #   用于展开变量列表，确保变量中的通配符（如 *）被正确解析。
 endif()
 
 # 如果是MSVC编译器，则复制相应的CUDA DLL文件
 if (MSVC)
+    # 使用文件通配符获取符合条件的 CUDA DLL 文件路径：
+    # NVIDIA CUDA 平台的动态链接库文件（Dynamic Link Library）
+    # CUDA DLL 文件包含了 CUDA 运行时库的实现，
+    #   提供了在程序运行时所需的函数和符号。
     file(GLOB CUDA_DLLS "${CUDA_COMPILER_BIN}/cudart64*.dll")
+    # # 如果存在 CUDA DLL 文件
     if (CUDA_DLLS)
+        # 添加自定义命令，在 ngp 目标构建完成后执行
         add_custom_command(TARGET ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CUDA_DLLS} "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_EXPAND_LISTS)
     endif()
 endif()
 
 # 如果构建选项为NGP_BUILD_EXECUTABLE，则添加instant-ngp可执行目标
 if (NGP_BUILD_EXECUTABLE)
+    # 添加可执行目标 instant-ngp，源文件为 main.cu
     add_executable(instant-ngp src/main.cu)
+    # 将 ngp 目标作为 instant-ngp 的私有依赖项
     target_link_libraries(instant-ngp PRIVATE ngp)
 
-    # Link the executable to the project directory and copy over DLLs such that instant-ngp can be invoked without going into the build folder.
+    # 将可执行文件链接到项目目录，并复制 DLL 文件，
+    #   以便可以在不进入构建目录的情况下调用 instant-ngp。
     set(NGP_BINARY_FILE "\"${CMAKE_CURRENT_SOURCE_DIR}/$<TARGET_FILE_NAME:instant-ngp>\"")
+
+    # 如果是 MSVC 编译器
     if (MSVC)
+        # 将 instant-ngp 的可执行文件复制到当前源代码目录
         add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:instant-ngp> ${CMAKE_CURRENT_SOURCE_DIR})
+        # 使用文件通配符获取符合条件的 CUDA DLL 文件路径
         file(GLOB NGP_REQUIRED_DLLS "${CUDA_COMPILER_BIN}/cudart64*.dll")
+        # 如果使用 NGP_VULKAN 选项，
+        #  将 NGX_SHARED_LIB（Vulkan 相关的共享库）
+        #  加入到所需 DLL 文件列表中
         if (NGP_VULKAN)
             list(APPEND NGP_REQUIRED_DLLS "${NGX_SHARED_LIB}")
         endif()
+
+        # 如果存在所需的 DLL 文件
         if (NGP_REQUIRED_DLLS)
+            # 将所需的 DLL 文件复制到当前源代码目录
             add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${NGP_REQUIRED_DLLS} ${CMAKE_CURRENT_SOURCE_DIR} COMMAND_EXPAND_LISTS)
         endif()
     else()
+        # 对于其他编译器（非 MSVC）
+        # 在当前源代码目录创建 instant-ngp 的符号链接
         add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:instant-ngp> "${NGP_BINARY_FILE}")
     endif()
 endif(NGP_BUILD_EXECUTABLE)
 
 # 如果Python_FOUND为真，则添加pyngp目标
 if (Python_FOUND)
+    # 添加共享库目标 pyngp，源文件为 python_api.cu
     add_library(pyngp SHARED src/python_api.cu)
+    # 设置 pyngp 的属性为隐藏可见性（用于控制符号可见性）
     set_target_properties(pyngp PROPERTIES CXX_VISIBILITY_PRESET "hidden" CUDA_VISIBILITY_PRESET "hidden")
+    # 将 ngp 目标作为 pyngp 的私有依赖项，
+    #   同时链接 Python 库和 pybind11 模块
     target_link_libraries(pyngp PRIVATE ngp PUBLIC ${PYTHON_LIBRARIES} pybind11::module)
+    # 添加宏定义 NGP_PYTHON
     target_compile_definitions(pyngp PUBLIC -DNGP_PYTHON)
+    # 使用 pybind11_extension 宏定义 pyngp 的扩展属性
     pybind11_extension(pyngp)
 endif()
