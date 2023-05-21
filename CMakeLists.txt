@@ -20,9 +20,9 @@ cmake_minimum_required(VERSION 3.18)
 # - `LANGUAGES C CXX CUDA` 指定项目支持的编程语言，包括C、C++和CUDA。
 # 这些信息在构建过程中起到了多个作用，包括构建生成文件、生成配置文件、设置输出目录和生成项目文件等。同时，它们也提供了对项目的简要描述和版本号等元数据。
 project(instant-ngp
-	VERSION 1.0
-	DESCRIPTION "Instant Neural Graphics Primitives"
-	LANGUAGES C CXX CUDA
+    VERSION 1.0
+    DESCRIPTION "Instant Neural Graphics Primitives"
+    LANGUAGES C CXX CUDA
 )
 
 # 定义NGP的版本变量
@@ -36,7 +36,7 @@ set(NGP_VERSION "${CMAKE_PROJECT_VERSION}")
 # 具体的用途取决于项目的需求和开发流程。
 # 部署阶段就没有dev后缀，非部署（开发）阶段，就会有dev
 if (NOT NGP_DEPLOY)
-	set(NGP_VERSION "${NGP_VERSION}dev")
+    set(NGP_VERSION "${NGP_VERSION}dev")
 endif()
 
 # 定义构建选项
@@ -75,11 +75,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # 在set命令中使用FORCE关键字，可以强制设置变量的值，覆盖任何已经存在的缓存值。
 # 如果变量已经被缓存，并且没有使用FORCE关键字，那么后续的set操作将不会改变该变量的值。
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-	message(STATUS "No release type specified. Setting to 'Release'.")
-	# 初始化了CMAKE_BUILD_TYPE这个变量
-	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-	# set_property用于限定属性的作用域，也就是让CMAKE_BUILD_TYPE只能在后面的三者中取值
-	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo")
+    message(STATUS "No release type specified. Setting to 'Release'.")
+    # 初始化了CMAKE_BUILD_TYPE这个变量
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    # set_property用于限定属性的作用域，也就是让CMAKE_BUILD_TYPE只能在后面的三者中取值
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo")
 endif()
 
 # 检查依赖项库glfw的CMakeLists.txt文件是否存在
@@ -88,11 +88,11 @@ endif()
 # 我们必须在git clone时加上--recursive命令，才能够将这些引用的依赖项的库给完整下载下来
 # git clone --recursive https://github.com/NVlabs/instant-ngp.git
 if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/CMakeLists.txt")
-	message(FATAL_ERROR
-		"Some instant-ngp dependencies are missing. "
-		"If you forgot the \"--recursive\" flag when cloning this project, "
-		"this can be fixed by calling \"git submodule update --init --recursive\"."
-	)
+    message(FATAL_ERROR
+        "Some instant-ngp dependencies are missing. "
+        "If you forgot the \"--recursive\" flag when cloning this project, "
+        "this can be fixed by calling \"git submodule update --init --recursive\"."
+    )
 endif()
 
 # 设置苹果系统下的RPATH
@@ -101,7 +101,7 @@ endif()
 # 为了确保程序能够找到这些库文件，需要设置一个运行时搜索路径。
 # 通过这个RPATH路径，程序就能够找到所需的库文件，而不必担心它们是否位于默认位置。
 if (APPLE)
-	set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_MACOSX_RPATH ON)
 endif()
 
 # 若使用MSVC编译器（Microsoft Visual C++）的情况
@@ -110,8 +110,8 @@ endif()
 # /MP24：这个选项用于启用并行编译，允许使用多个处理器核心并行地编译源文件。
 # /MP24表示使用24个并行编译任务。这可以加快编译速度。
 if (MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP24")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP24")
 # 其他编译器（非MSVC）
 # -fms-extensions：这个选项用于启用编译器对Microsoft特定的扩展语法的支持。
 # 这样可以在源代码中使用一些Microsoft特有的语法和功能。
@@ -119,8 +119,8 @@ if (MSVC)
 # 以便在共享库（动态链接库）中使用。它是一种编译选项，使得生成的代码可以在内存中的任意位置加载和执行，
 # 而不依赖于特定的内存地址。这对于共享库的使用非常重要。
 else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
 # 设置C++标准为C++14
@@ -178,23 +178,28 @@ set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
 # endforeach()
 # NVCC（NVIDIA CUDA Compiler）是 NVIDIA 
 # 提供的用于编译和构建 CUDA C/C++ 代码的编译器。
-
 if (MSVC)
-	# 大型项目时，MSVC 默认的对象文件格式可能会导致链接错误。
-	# 这是由于 MSVC 对象文件格式所支持的符号表大小有限制。
-	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=/bigobj")
+    # 大型项目时，MSVC 默认的对象文件格式可能会导致链接错误。
+    # 这是由于 MSVC 对象文件格式所支持的符号表大小有限制。
+    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=/bigobj")
 else()
-	# 禁止显示浮点数转换的警告。
-	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-Wno-float-conversion")
-	# 禁用严格别名规则，允许不同类型的指针相互转换。
-	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fno-strict-aliasing")
-	# 启用 Microsoft 扩展，允许使用一些 MSVC 特定的语法扩展。
-	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fms-extensions")
-	# 生成位置无关代码，用于支持共享库的编译。
-	list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fPIC")
+    # 禁止显示浮点数转换的警告。
+    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-Wno-float-conversion")
+    # 禁用严格别名规则，允许不同类型的指针相互转换。
+    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fno-strict-aliasing")
+    # 启用 Microsoft 扩展，允许使用一些 MSVC 特定的语法扩展。
+    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fms-extensions")
+    # 生成位置无关代码，用于支持共享库的编译。
+    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler=-fPIC")
 endif()
+# 允许在 CUDA C++ 中使用扩展的 lambda 表达式。
 list(APPEND CUDA_NVCC_FLAGS "--extended-lambda")
+# 启用对松散常量表达式（relaxed constexpr）的支持
 list(APPEND CUDA_NVCC_FLAGS "--expt-relaxed-constexpr")
+# 启用快速数学运算的优化, 可能会影响计算结果的精度:
+# 1.将某些精度要求较高的计算替换为更快但精度稍低的算法，以加快计算速度。
+# 2.使用近似算法，例如使用快速的三角函数和指数函数实现。
+# 3.允许并行化和向量化优化，以利用 GPU 的并行计算能力。
 list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
 
 ###############################################################################
@@ -202,9 +207,19 @@ list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
 ###############################################################################
 
 # 添加依赖项
+# 禁用了构建基准测试的选项
+# 基准测试：评估计算机系统或软件性能的方法
+# 	运行一组标准化的测试任务或程序来测量系统
+# 	的处理能力、响应时间、吞吐量等性能指标
 set(TCNN_BUILD_BENCHMARK OFF)
+# 禁用了构建示例程序的选项
+# 示例程序：编译和生成一些演示性质的程序
+# 	用于展示库、框架或工具的使用方法和功能。
 set(TCNN_BUILD_EXAMPLES OFF)
+# 禁用了使用CuBLAS和CuSolver库的选项。
+# 这意味着构建过程将不会使用这些库进行加速。
 set(TCNN_ALLOW_CUBLAS_CUSOLVER OFF)
+# 添加了tiny-cuda-nn库作为依赖项
 add_subdirectory(dependencies/tiny-cuda-nn)
 
 # 设置CUDA的架构
@@ -212,159 +227,174 @@ set(CMAKE_CUDA_ARCHITECTURES ${TCNN_CUDA_ARCHITECTURES})
 
 # 检查是否构建GUI
 if (NGP_BUILD_WITH_GUI)
-	find_package(Vulkan)
-	if (Vulkan_FOUND AND NGP_BUILD_WITH_VULKAN)
-		set(NGP_VULKAN ON)
-		list(APPEND NGP_DEFINITIONS -DNGP_VULKAN -DGLFW_INCLUDE_VULKAN)
-		list(APPEND NGP_INCLUDE_DIRECTORIES "${Vulkan_INCLUDE_DIRS}")
-		list(APPEND NGP_LIBRARIES ${Vulkan_LIBRARIES})
+    # 查找Vulkan库
+    find_package(Vulkan)
+    # # 检查Vulkan库是否被找到并且NGP_BUILD_WITH_VULKAN为真
+    if (Vulkan_FOUND AND NGP_BUILD_WITH_VULKAN)
+        set(NGP_VULKAN ON)
+        # 添加宏定义
+        list(APPEND NGP_DEFINITIONS -DNGP_VULKAN -DGLFW_INCLUDE_VULKAN)
+        # 添加包含目录
+        list(APPEND NGP_INCLUDE_DIRECTORIES "${Vulkan_INCLUDE_DIRS}")
+        # 添加链接库
+        list(APPEND NGP_LIBRARIES ${Vulkan_LIBRARIES})
 
-		list(APPEND GUI_SOURCES src/dlss.cu)
+        # 添加GUI相关源文件
+        list(APPEND GUI_SOURCES src/dlss.cu)
 
-		# DLSS depends on vulkan, so appears here
-		list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/dlss/include")
-		if (MSVC)
-			list(APPEND NGP_LINK_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Windows_x86_64/x86_64")
-			list(APPEND NGP_LIBRARIES "$<IF:$<CONFIG:Debug>,nvsdk_ngx_d_dbg,nvsdk_ngx_d>")
-		else()
-			list(APPEND NGP_LINK_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Linux_x86_64")
-			list(APPEND NGP_LIBRARIES nvsdk_ngx)
-		endif()
-	else()
-		set(NGP_VULKAN OFF)
-		if (NGP_BUILD_WITH_VULKAN)
-			message(WARNING
-				"Vulkan was not found. Instant neural graphics primitives will still "
-				"compile and run correctly, but DLSS will not be supported."
-			)
-		endif()
-	endif()
+        # DLSS依赖于Vulkan，因此出现在这里
+        # DLSS（Deep Learning Super Sampling）
+        # 	是一种基于深度学习的超级采样技术，由NVIDIA开发。
+        list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/dlss/include")
+        
+        # 根据操作系统设置链接目录和库文件
+        # MSVC（Microsoft Visual C++）
+        if (MSVC)
+            # 这个路径用于指定在Windows系统构建过程中所需的 DLSS 库的位置。
+            list(APPEND NGP_LINK_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Windows_x86_64/x86_64")
+            # $<CONFIG:Debug> 是一个条件判断，检查构建配置是否为 Debug 模式
+            # 条件为真，生成器表达式将返回 nvsdk_ngx_d_dbg，表示 Debug 模式下的库文件名称。
+            # 条件为假，生成器表达式将返回 nvsdk_ngx_d，表示非 Debug 模式下的库文件名称。
+            list(APPEND NGP_LIBRARIES "$<IF:$<CONFIG:Debug>,nvsdk_ngx_d_dbg,nvsdk_ngx_d>")
+        else()
+            list(APPEND NGP_LINK_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Linux_x86_64")
+            list(APPEND NGP_LIBRARIES nvsdk_ngx)
+        endif()
+    else()
+        set(NGP_VULKAN OFF)
+        if (NGP_BUILD_WITH_VULKAN)
+            message(WARNING
+                "Vulkan was not found. Instant neural graphics primitives will still "
+                "compile and run correctly, but DLSS will not be supported."
+            )
+        endif()
+    endif()
 
-	# OpenXR
-	if (WIN32)
-		list(APPEND NGP_DEFINITIONS -DXR_USE_PLATFORM_WIN32 -DGLFW_EXPOSE_NATIVE_WGL)
-	elseif (UNIX AND NOT APPLE)
-		list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_GLX)
-		if (JK_USE_WAYLAND)
-			set(PRESENTATION_BACKEND wayland CACHE STRING " " FORCE)
-			set(BUILD_WITH_XLIB_HEADERS OFF CACHE BOOL " " FORCE)
-			set(BUILD_WITH_XCB_HEADERS OFF CACHE BOOL " " FORCE)
-			set(BUILD_WITH_WAYLAND_HEADERS ON CACHE BOOL " " FORCE)
-			list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_WAYLAND -DXR_USE_PLATFORM_WAYLAND)
-		else()
-			set(PRESENTATION_BACKEND xlib CACHE STRING " " FORCE)
-			set(BUILD_WITH_XLIB_HEADERS ON CACHE BOOL " " FORCE)
-			set(BUILD_WITH_XCB_HEADERS OFF CACHE BOOL " " FORCE)
-			set(BUILD_WITH_WAYLAND_HEADERS OFF CACHE BOOL " " FORCE)
-			list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_X11 -DXR_USE_PLATFORM_XLIB)
-		endif()
-	else()
-		message(FATAL_ERROR "No OpenXR platform set for this OS")
-	endif()
+    # OpenXR
+    if (WIN32)
+        list(APPEND NGP_DEFINITIONS -DXR_USE_PLATFORM_WIN32 -DGLFW_EXPOSE_NATIVE_WGL)
+    elseif (UNIX AND NOT APPLE)
+        list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_GLX)
+        if (JK_USE_WAYLAND)
+            set(PRESENTATION_BACKEND wayland CACHE STRING " " FORCE)
+            set(BUILD_WITH_XLIB_HEADERS OFF CACHE BOOL " " FORCE)
+            set(BUILD_WITH_XCB_HEADERS OFF CACHE BOOL " " FORCE)
+            set(BUILD_WITH_WAYLAND_HEADERS ON CACHE BOOL " " FORCE)
+            list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_WAYLAND -DXR_USE_PLATFORM_WAYLAND)
+        else()
+            set(PRESENTATION_BACKEND xlib CACHE STRING " " FORCE)
+            set(BUILD_WITH_XLIB_HEADERS ON CACHE BOOL " " FORCE)
+            set(BUILD_WITH_XCB_HEADERS OFF CACHE BOOL " " FORCE)
+            set(BUILD_WITH_WAYLAND_HEADERS OFF CACHE BOOL " " FORCE)
+            list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_X11 -DXR_USE_PLATFORM_XLIB)
+        endif()
+    else()
+        message(FATAL_ERROR "No OpenXR platform set for this OS")
+    endif()
 
-	add_subdirectory(dependencies/OpenXR-SDK)
+    add_subdirectory(dependencies/OpenXR-SDK)
 
-	list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/OpenXR-SDK/include" "dependencies/OpenXR-SDK/src/common")
-	list(APPEND NGP_LIBRARIES openxr_loader)
-	list(APPEND GUI_SOURCES src/openxr_hmd.cu)
+    list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/OpenXR-SDK/include" "dependencies/OpenXR-SDK/src/common")
+    list(APPEND NGP_LIBRARIES openxr_loader)
+    list(APPEND GUI_SOURCES src/openxr_hmd.cu)
 
-	# OpenGL
-	find_package(OpenGL REQUIRED)
+    # OpenGL
+    find_package(OpenGL REQUIRED)
 
-	# GLFW
-	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
-	set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
-	set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
-	set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
-	set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
-	set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
-	set(GLFW_VULKAN_STATIC OFF CACHE BOOL " " FORCE)
-	set(BUILD_SHARED_LIBS ON CACHE BOOL " " FORCE)
+    # GLFW
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
+    set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
+    set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
+    set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
+    set(GLFW_VULKAN_STATIC OFF CACHE BOOL " " FORCE)
+    set(BUILD_SHARED_LIBS ON CACHE BOOL " " FORCE)
 
-	add_subdirectory(dependencies/glfw)
+    add_subdirectory(dependencies/glfw)
 
-	set_target_properties(glfw PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+    set_target_properties(glfw PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 
-	mark_as_advanced(
-		GLFW_BUILD_DOCS GLFW_BUILD_EXAMPLES GLFW_BUILD_INSTALL GLFW_BUILD_TESTS
-		GLFW_DOCUMENT_INTERNALS GLFW_INSTALL GLFW_USE_CHDIR GLFW_USE_MENUBAR
-		GLFW_USE_OSMESA GLFW_VULKAN_STATIC GLFW_USE_RETINA GLFW_USE_MIR
-		BUILD_SHARED_LIBS USE_MSVC_RUNTIME_LIBRARY_DLL
-	)
+    mark_as_advanced(
+        GLFW_BUILD_DOCS GLFW_BUILD_EXAMPLES GLFW_BUILD_INSTALL GLFW_BUILD_TESTS
+        GLFW_DOCUMENT_INTERNALS GLFW_INSTALL GLFW_USE_CHDIR GLFW_USE_MENUBAR
+        GLFW_USE_OSMESA GLFW_VULKAN_STATIC GLFW_USE_RETINA GLFW_USE_MIR
+        BUILD_SHARED_LIBS USE_MSVC_RUNTIME_LIBRARY_DLL
+    )
 
-	list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/glfw/include" "dependencies/imgui")
+    list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/glfw/include" "dependencies/imgui")
 
-	if (MSVC)
-		list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/gl3w")
-		list(APPEND GUI_SOURCES "dependencies/gl3w/GL/gl3w.c")
-		list(APPEND NGP_LIBRARIES opengl32 $<TARGET_OBJECTS:glfw_objects>)
-	else()
-		find_package(GLEW REQUIRED)
-		list(APPEND NGP_INCLUDE_DIRECTORIES ${GLEW_INCLUDE_DIRS})
-		list(APPEND NGP_LIBRARIES GL ${GLEW_LIBRARIES} $<TARGET_OBJECTS:glfw_objects>)
-	endif()
+    if (MSVC)
+        list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/gl3w")
+        list(APPEND GUI_SOURCES "dependencies/gl3w/GL/gl3w.c")
+        list(APPEND NGP_LIBRARIES opengl32 $<TARGET_OBJECTS:glfw_objects>)
+    else()
+        find_package(GLEW REQUIRED)
+        list(APPEND NGP_INCLUDE_DIRECTORIES ${GLEW_INCLUDE_DIRS})
+        list(APPEND NGP_LIBRARIES GL ${GLEW_LIBRARIES} $<TARGET_OBJECTS:glfw_objects>)
+    endif()
 
-	list(APPEND GUI_SOURCES
-		dependencies/imguizmo/ImGuizmo.cpp
-		dependencies/imgui/imgui.cpp
-		dependencies/imgui/backends/imgui_impl_glfw.cpp
-		dependencies/imgui/backends/imgui_impl_opengl3.cpp
-		dependencies/imgui/imgui_draw.cpp
-		dependencies/imgui/imgui_tables.cpp
-		dependencies/imgui/imgui_widgets.cpp
-	)
+    list(APPEND GUI_SOURCES
+        dependencies/imguizmo/ImGuizmo.cpp
+        dependencies/imgui/imgui.cpp
+        dependencies/imgui/backends/imgui_impl_glfw.cpp
+        dependencies/imgui/backends/imgui_impl_opengl3.cpp
+        dependencies/imgui/imgui_draw.cpp
+        dependencies/imgui/imgui_tables.cpp
+        dependencies/imgui/imgui_widgets.cpp
+    )
 
-	list(APPEND NGP_DEFINITIONS -DNGP_GUI)
+    list(APPEND NGP_DEFINITIONS -DNGP_GUI)
 endif(NGP_BUILD_WITH_GUI)
 
 # 添加其他依赖项的路径
 list(APPEND NGP_INCLUDE_DIRECTORIES
-	"dependencies"
-	"dependencies/filesystem"
-	"dependencies/glm"
-	"dependencies/nanovdb"
-	"dependencies/NaturalSort"
-	"dependencies/tinylogger"
+    "dependencies"
+    "dependencies/filesystem"
+    "dependencies/glm"
+    "dependencies/nanovdb"
+    "dependencies/NaturalSort"
+    "dependencies/tinylogger"
 )
 
 # 查找并使用OpenMP
 find_package(OpenMP)
 if (OPENMP_FOUND)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 # 如果构建选项为NGP_BUILD_WITH_OPTIX，则添加OptiX相关依赖项
 if (NGP_BUILD_WITH_OPTIX)
-	set(NGP_OPTIX ON)
-	list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/optix")
-	list(APPEND NGP_DEFINITIONS -DNGP_OPTIX)
+    set(NGP_OPTIX ON)
+    list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/optix")
+    list(APPEND NGP_DEFINITIONS -DNGP_OPTIX)
 endif()
 
 
 if (NGP_BUILD_WITH_PYTHON_BINDINGS)
-	find_package(Python 3.7 COMPONENTS Interpreter Development)
-	if (Python_FOUND)
-		add_subdirectory("dependencies/pybind11")
-	endif()
+    find_package(Python 3.7 COMPONENTS Interpreter Development)
+    if (Python_FOUND)
+        add_subdirectory("dependencies/pybind11")
+    endif()
 endif()
 
 
 # Compile zlib (only on Windows)
 if (WIN32)
-	set(ZLIB_USE_STATIC_LIBS ON CACHE BOOL " " FORCE)
-	set(ZLIB_BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
-	set(ZLIB_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
-	set(SKIP_INSTALL_ALL ON CACHE BOOL " " FORCE)
-	add_subdirectory("dependencies/zlib")
-	set_property(TARGET zlibstatic PROPERTY FOLDER "dependencies")
+    set(ZLIB_USE_STATIC_LIBS ON CACHE BOOL " " FORCE)
+    set(ZLIB_BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
+    set(ZLIB_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
+    set(SKIP_INSTALL_ALL ON CACHE BOOL " " FORCE)
+    add_subdirectory("dependencies/zlib")
+    set_property(TARGET zlibstatic PROPERTY FOLDER "dependencies")
 
-	set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/zlib" CACHE PATH " " FORCE)
-	set(ZLIB_LIBRARY zlibstatic)
+    set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/zlib" CACHE PATH " " FORCE)
+    set(ZLIB_LIBRARY zlibstatic)
 
-	include_directories(${ZLIB_INCLUDE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/dependencies/zlib")
+    include_directories(${ZLIB_INCLUDE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/dependencies/zlib")
 
-	list(APPEND NGP_LIBRARIES zlibstatic)
+    list(APPEND NGP_LIBRARIES zlibstatic)
 endif()
 
 
@@ -380,25 +410,25 @@ list(APPEND NGP_LIBRARIES zstr::zstr)
 list(APPEND NGP_DEFINITIONS -DNGP_VERSION="${NGP_VERSION}")
 list(APPEND NGP_INCLUDE_DIRECTORIES "include")
 if (NOT MSVC)
-	list(APPEND NGP_LIBRARIES ${CMAKE_DL_LIBS})
+    list(APPEND NGP_LIBRARIES ${CMAKE_DL_LIBS})
 endif()
 list(APPEND NGP_SOURCES
-	${GUI_SOURCES}
-	src/camera_path.cu
-	src/common.cu
-	src/common_device.cu
-	src/marching_cubes.cu
-	src/nerf_loader.cu
-	src/render_buffer.cu
-	src/testbed.cu
-	src/testbed_image.cu
-	src/testbed_nerf.cu
-	src/testbed_sdf.cu
-	src/testbed_volume.cu
-	src/thread_pool.cpp
-	src/tinyexr_wrapper.cu
-	src/tinyobj_loader_wrapper.cpp
-	src/triangle_bvh.cu
+    ${GUI_SOURCES}
+    src/camera_path.cu
+    src/common.cu
+    src/common_device.cu
+    src/marching_cubes.cu
+    src/nerf_loader.cu
+    src/render_buffer.cu
+    src/testbed.cu
+    src/testbed_image.cu
+    src/testbed_nerf.cu
+    src/testbed_sdf.cu
+    src/testbed_volume.cu
+    src/thread_pool.cpp
+    src/tinyexr_wrapper.cu
+    src/tinyobj_loader_wrapper.cpp
+    src/triangle_bvh.cu
 )
 
 # 设置输出目录
@@ -413,46 +443,46 @@ get_filename_component(CUDA_COMPILER_BIN "${CMAKE_CUDA_COMPILER}" DIRECTORY)
 
 # 如果构建选项为NGP_OPTIX，则添加optix_program目标
 if (NGP_OPTIX)
-	add_library(optix_program OBJECT
-		src/optix/pathescape.cu
-		src/optix/raystab.cu
-		src/optix/raytrace.cu
-	)
+    add_library(optix_program OBJECT
+        src/optix/pathescape.cu
+        src/optix/raystab.cu
+        src/optix/raytrace.cu
+    )
 
-	set_target_properties(optix_program PROPERTIES CUDA_PTX_COMPILATION ON CUDA_ARCHITECTURES OFF)
-	target_compile_definitions(optix_program PUBLIC ${NGP_DEFINITIONS} -DTCNN_MIN_GPU_ARCH=0)
-	target_compile_options(optix_program PUBLIC "--expt-relaxed-constexpr")
+    set_target_properties(optix_program PROPERTIES CUDA_PTX_COMPILATION ON CUDA_ARCHITECTURES OFF)
+    target_compile_definitions(optix_program PUBLIC ${NGP_DEFINITIONS} -DTCNN_MIN_GPU_ARCH=0)
+    target_compile_options(optix_program PUBLIC "--expt-relaxed-constexpr")
 
-	get_target_property(TCNN_INCLUDE_DIRECTORIES tiny-cuda-nn INCLUDE_DIRECTORIES)
-	target_include_directories(optix_program PUBLIC ${NGP_INCLUDE_DIRECTORIES} ${TCNN_INCLUDE_DIRECTORIES})
+    get_target_property(TCNN_INCLUDE_DIRECTORIES tiny-cuda-nn INCLUDE_DIRECTORIES)
+    target_include_directories(optix_program PUBLIC ${NGP_INCLUDE_DIRECTORIES} ${TCNN_INCLUDE_DIRECTORIES})
 
-	# OptiX programs will be compiled as PTX and packaged
-	# as headers to be included from the binary dir.
-	list(APPEND NGP_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
-	set(OPTIX_PTX_HEADER ${CMAKE_CURRENT_BINARY_DIR}/optix_ptx.h)
+    # OptiX programs will be compiled as PTX and packaged
+    # as headers to be included from the binary dir.
+    list(APPEND NGP_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}")
+    set(OPTIX_PTX_HEADER ${CMAKE_CURRENT_BINARY_DIR}/optix_ptx.h)
 
-	find_program(bin_to_c NAMES bin2c PATHS ${CUDA_COMPILER_BIN})
-	if (NOT bin_to_c)
-		message(FATAL_ERROR
-			"bin2c not found:\n"
-			"  CMAKE_CUDA_COMPILER='${CMAKE_CUDA_COMPILER}'\n"
-			"  CUDA_COMPILER_BIN='${CUDA_COMPILER_BIN}'\n"
-		)
-	endif()
+    find_program(bin_to_c NAMES bin2c PATHS ${CUDA_COMPILER_BIN})
+    if (NOT bin_to_c)
+        message(FATAL_ERROR
+            "bin2c not found:\n"
+            "  CMAKE_CUDA_COMPILER='${CMAKE_CUDA_COMPILER}'\n"
+            "  CUDA_COMPILER_BIN='${CUDA_COMPILER_BIN}'\n"
+        )
+    endif()
 
-	add_custom_command(
-		OUTPUT "${OPTIX_PTX_HEADER}"
-		COMMAND ${CMAKE_COMMAND}
-		"-DBIN_TO_C_COMMAND=${bin_to_c}"
-		"-DOBJECTS=$<TARGET_OBJECTS:optix_program>"
-		"-DOUTPUT=${OPTIX_PTX_HEADER}"
-		-P ${PROJECT_SOURCE_DIR}/cmake/bin2c_wrapper.cmake
-		VERBATIM
-		DEPENDS optix_program
-		COMMENT "Converting PTX files to a C header"
-	)
+    add_custom_command(
+        OUTPUT "${OPTIX_PTX_HEADER}"
+        COMMAND ${CMAKE_COMMAND}
+        "-DBIN_TO_C_COMMAND=${bin_to_c}"
+        "-DOBJECTS=$<TARGET_OBJECTS:optix_program>"
+        "-DOUTPUT=${OPTIX_PTX_HEADER}"
+        -P ${PROJECT_SOURCE_DIR}/cmake/bin2c_wrapper.cmake
+        VERBATIM
+        DEPENDS optix_program
+        COMMENT "Converting PTX files to a C header"
+    )
 
-	list(APPEND NGP_SOURCES ${OPTIX_PTX_HEADER})
+    list(APPEND NGP_SOURCES ${OPTIX_PTX_HEADER})
 endif()
 
 # 添加ngp目标
@@ -467,50 +497,50 @@ target_link_libraries(ngp PUBLIC ${NGP_LIBRARIES} tiny-cuda-nn)
 # 如果构建选项为NGP_VULKAN，则将共享库复制到二进制目录
 # Copy shared libraries to the binary directory as needed
 if (NGP_VULKAN)
-	set(NGX_BUILD_DIR "$<IF:$<CONFIG:Debug>,dev,rel>")
-	if (MSVC)
-		set(NGX_SHARED_LIB "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Windows_x86_64/${NGX_BUILD_DIR}/nvngx_dlss.dll")
-	else()
-		set(NGX_SHARED_LIB "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Linux_x86_64/${NGX_BUILD_DIR}/libnvidia-ngx-dlss.so.*")
-	endif()
+    set(NGX_BUILD_DIR "$<IF:$<CONFIG:Debug>,dev,rel>")
+    if (MSVC)
+        set(NGX_SHARED_LIB "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Windows_x86_64/${NGX_BUILD_DIR}/nvngx_dlss.dll")
+    else()
+        set(NGX_SHARED_LIB "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Linux_x86_64/${NGX_BUILD_DIR}/libnvidia-ngx-dlss.so.*")
+    endif()
 
-	add_custom_command(TARGET ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${NGX_SHARED_LIB}" "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_EXPAND_LISTS)
+    add_custom_command(TARGET ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${NGX_SHARED_LIB}" "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_EXPAND_LISTS)
 endif()
 
 # 如果是MSVC编译器，则复制相应的CUDA DLL文件
 if (MSVC)
-	file(GLOB CUDA_DLLS "${CUDA_COMPILER_BIN}/cudart64*.dll")
-	if (CUDA_DLLS)
-		add_custom_command(TARGET ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CUDA_DLLS} "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_EXPAND_LISTS)
-	endif()
+    file(GLOB CUDA_DLLS "${CUDA_COMPILER_BIN}/cudart64*.dll")
+    if (CUDA_DLLS)
+        add_custom_command(TARGET ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CUDA_DLLS} "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_EXPAND_LISTS)
+    endif()
 endif()
 
 # 如果构建选项为NGP_BUILD_EXECUTABLE，则添加instant-ngp可执行目标
 if (NGP_BUILD_EXECUTABLE)
-	add_executable(instant-ngp src/main.cu)
-	target_link_libraries(instant-ngp PRIVATE ngp)
+    add_executable(instant-ngp src/main.cu)
+    target_link_libraries(instant-ngp PRIVATE ngp)
 
-	# Link the executable to the project directory and copy over DLLs such that instant-ngp can be invoked without going into the build folder.
-	set(NGP_BINARY_FILE "\"${CMAKE_CURRENT_SOURCE_DIR}/$<TARGET_FILE_NAME:instant-ngp>\"")
-	if (MSVC)
-		add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:instant-ngp> ${CMAKE_CURRENT_SOURCE_DIR})
-		file(GLOB NGP_REQUIRED_DLLS "${CUDA_COMPILER_BIN}/cudart64*.dll")
-		if (NGP_VULKAN)
-			list(APPEND NGP_REQUIRED_DLLS "${NGX_SHARED_LIB}")
-		endif()
-		if (NGP_REQUIRED_DLLS)
-			add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${NGP_REQUIRED_DLLS} ${CMAKE_CURRENT_SOURCE_DIR} COMMAND_EXPAND_LISTS)
-		endif()
-	else()
-		add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:instant-ngp> "${NGP_BINARY_FILE}")
-	endif()
+    # Link the executable to the project directory and copy over DLLs such that instant-ngp can be invoked without going into the build folder.
+    set(NGP_BINARY_FILE "\"${CMAKE_CURRENT_SOURCE_DIR}/$<TARGET_FILE_NAME:instant-ngp>\"")
+    if (MSVC)
+        add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:instant-ngp> ${CMAKE_CURRENT_SOURCE_DIR})
+        file(GLOB NGP_REQUIRED_DLLS "${CUDA_COMPILER_BIN}/cudart64*.dll")
+        if (NGP_VULKAN)
+            list(APPEND NGP_REQUIRED_DLLS "${NGX_SHARED_LIB}")
+        endif()
+        if (NGP_REQUIRED_DLLS)
+            add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${NGP_REQUIRED_DLLS} ${CMAKE_CURRENT_SOURCE_DIR} COMMAND_EXPAND_LISTS)
+        endif()
+    else()
+        add_custom_command(TARGET instant-ngp POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:instant-ngp> "${NGP_BINARY_FILE}")
+    endif()
 endif(NGP_BUILD_EXECUTABLE)
 
 # 如果Python_FOUND为真，则添加pyngp目标
 if (Python_FOUND)
-	add_library(pyngp SHARED src/python_api.cu)
-	set_target_properties(pyngp PROPERTIES CXX_VISIBILITY_PRESET "hidden" CUDA_VISIBILITY_PRESET "hidden")
-	target_link_libraries(pyngp PRIVATE ngp PUBLIC ${PYTHON_LIBRARIES} pybind11::module)
-	target_compile_definitions(pyngp PUBLIC -DNGP_PYTHON)
-	pybind11_extension(pyngp)
+    add_library(pyngp SHARED src/python_api.cu)
+    set_target_properties(pyngp PROPERTIES CXX_VISIBILITY_PRESET "hidden" CUDA_VISIBILITY_PRESET "hidden")
+    target_link_libraries(pyngp PRIVATE ngp PUBLIC ${PYTHON_LIBRARIES} pybind11::module)
+    target_compile_definitions(pyngp PUBLIC -DNGP_PYTHON)
+    pybind11_extension(pyngp)
 endif()
