@@ -257,11 +257,16 @@ if (NGP_BUILD_WITH_GUI)
             # 条件为假，生成器表达式将返回 nvsdk_ngx_d，表示非 Debug 模式下的库文件名称。
             list(APPEND NGP_LIBRARIES "$<IF:$<CONFIG:Debug>,nvsdk_ngx_d_dbg,nvsdk_ngx_d>")
         else()
+            # 这个路径用于指定在Linux系统构建过程中所需的 DLSS 库的位置。
             list(APPEND NGP_LINK_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/dlss/lib/Linux_x86_64")
+            # 添加库
             list(APPEND NGP_LIBRARIES nvsdk_ngx)
         endif()
     else()
+        # 若未安装VULKAN，则设置NGP_VULKAN为OFF
         set(NGP_VULKAN OFF)
+        # 如果NGP_BUILD_WITH_VULKAN为真，
+        #   并且找不到Vulkan库，则发出警告消息
         if (NGP_BUILD_WITH_VULKAN)
             message(WARNING
                 "Vulkan was not found. Instant neural graphics primitives will still "
@@ -271,37 +276,64 @@ if (NGP_BUILD_WITH_GUI)
     endif()
 
     # OpenXR
+    # OpenXR是专注于虚拟和增强现实领域的API
+    # 在OpenXR中，可以选择使用不同的平台后端，包括Wayland和Xlib。
     if (WIN32)
+        # 如果是Windows平台，添加宏定义，
+        #   指定使用Win32平台和GLFW的本地WGL（Windows图形库）扩展
         list(APPEND NGP_DEFINITIONS -DXR_USE_PLATFORM_WIN32 -DGLFW_EXPOSE_NATIVE_WGL)
     elseif (UNIX AND NOT APPLE)
+        # 如果是UNIX平台（非苹果平台），
+        #   添加宏定义，指定使用GLX（OpenGL扩展）
+        #   和GLFW的本地GLX扩展
         list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_GLX)
+        # 如果使用Wayland作为显示服务器，设置相关的配置选项
+        # Wayland是一种计算机图形显示协议, 被广泛用于许多Linux发行版
         if (JK_USE_WAYLAND)
+            # 将PRESENTATION_BACKEND变量设置为wayland，指定使用Wayland作为显示服务器
             set(PRESENTATION_BACKEND wayland CACHE STRING " " FORCE)
+            # 将BUILD_WITH_XLIB_HEADERS变量设置为OFF，禁用Xlib头文件的构建
             set(BUILD_WITH_XLIB_HEADERS OFF CACHE BOOL " " FORCE)
+            # 将BUILD_WITH_XCB_HEADERS变量设置为OFF，禁用XCB头文件的构建
             set(BUILD_WITH_XCB_HEADERS OFF CACHE BOOL " " FORCE)
+            # 将BUILD_WITH_WAYLAND_HEADERS变量设置为ON，启用Wayland头文件的构建
             set(BUILD_WITH_WAYLAND_HEADERS ON CACHE BOOL " " FORCE)
+            # 向NGP_DEFINITIONS列表添加宏定义，
+            #   指定GLFW暴露原生的Wayland扩展和使用Wayland作为OpenXR的平台
             list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_WAYLAND -DXR_USE_PLATFORM_WAYLAND)
+        # 否则使用xlib作为图形系统接口库
         else()
+            # 将PRESENTATION_BACKEND变量设置为xlib，
+            #   指定使用Xlib作为显示服务器
             set(PRESENTATION_BACKEND xlib CACHE STRING " " FORCE)
+            # 将BUILD_WITH_XLIB_HEADERS变量设置为ON，启用Xlib头文件的构建
             set(BUILD_WITH_XLIB_HEADERS ON CACHE BOOL " " FORCE)
+            # 将BUILD_WITH_XCB_HEADERS变量设置为OFF，禁用XCB头文件的构建
             set(BUILD_WITH_XCB_HEADERS OFF CACHE BOOL " " FORCE)
+            # 将BUILD_WITH_WAYLAND_HEADERS变量设置为OFF，
+            #   禁用Wayland头文件的构建
             set(BUILD_WITH_WAYLAND_HEADERS OFF CACHE BOOL " " FORCE)
+            # 向NGP_DEFINITIONS列表添加宏定义，
+            #   指定GLFW暴露原生的X11扩展和使用Xlib作为OpenXR的平台
             list(APPEND NGP_DEFINITIONS -DGLFW_EXPOSE_NATIVE_X11 -DXR_USE_PLATFORM_XLIB)
         endif()
     else()
+        # 如果不是Windows也不是UNIX平台，则抛出致命错误
         message(FATAL_ERROR "No OpenXR platform set for this OS")
     endif()
-
+    # 添加OpenXR-SDK子目录进行构建
     add_subdirectory(dependencies/OpenXR-SDK)
-
+    # 添加OpenXR-SDK相关的包含目录和链接库
     list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/OpenXR-SDK/include" "dependencies/OpenXR-SDK/src/common")
     list(APPEND NGP_LIBRARIES openxr_loader)
     list(APPEND GUI_SOURCES src/openxr_hmd.cu)
 
     # OpenGL
+    # 查找OpenGL库
     find_package(OpenGL REQUIRED)
-
-    # GLFW
+    # GLFW：用于创建窗口、处理用户输入、获取
+    #   OpenGL上下文以及管理OpenGL的扩展和版本
+    # 配置GLFW选项
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
@@ -310,30 +342,39 @@ if (NGP_BUILD_WITH_GUI)
     set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
     set(GLFW_VULKAN_STATIC OFF CACHE BOOL " " FORCE)
     set(BUILD_SHARED_LIBS ON CACHE BOOL " " FORCE)
-
+    # 添加glfw子目录进行构建
     add_subdirectory(dependencies/glfw)
-
+    # 设置glfw目标属性
     set_target_properties(glfw PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
-
+    # 标记某些glfw选项为高级选项
     mark_as_advanced(
         GLFW_BUILD_DOCS GLFW_BUILD_EXAMPLES GLFW_BUILD_INSTALL GLFW_BUILD_TESTS
         GLFW_DOCUMENT_INTERNALS GLFW_INSTALL GLFW_USE_CHDIR GLFW_USE_MENUBAR
         GLFW_USE_OSMESA GLFW_VULKAN_STATIC GLFW_USE_RETINA GLFW_USE_MIR
         BUILD_SHARED_LIBS USE_MSVC_RUNTIME_LIBRARY_DLL
     )
-
+    # 添加glfw和imgui的包含目录
+    # imgui是一个轻量级的、即时模式的图形用户界面库
+    # 设计思想是即时模式，即在每一帧渲染时，
+    # 应用程序可以根据当前状态直接构建和绘制UI，而无需维护复杂的UI层次结构
     list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/glfw/include" "dependencies/imgui")
 
     if (MSVC)
+        # 添加gl3w的包含目录
+        # gl3w是一个用于加载和管理OpenGL函数指针的库
         list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/gl3w")
+        # 添加gl3w的源文件
         list(APPEND GUI_SOURCES "dependencies/gl3w/GL/gl3w.c")
+        # 添加OpenGL和glfw的链接库
         list(APPEND NGP_LIBRARIES opengl32 $<TARGET_OBJECTS:glfw_objects>)
     else()
+        # 在非MSVC平台上，查找并添加GLEW库的依赖
         find_package(GLEW REQUIRED)
         list(APPEND NGP_INCLUDE_DIRECTORIES ${GLEW_INCLUDE_DIRS})
         list(APPEND NGP_LIBRARIES GL ${GLEW_LIBRARIES} $<TARGET_OBJECTS:glfw_objects>)
     endif()
 
+    # 添加GUI相关的源文件
     list(APPEND GUI_SOURCES
         dependencies/imguizmo/ImGuizmo.cpp
         dependencies/imgui/imgui.cpp
@@ -344,10 +385,17 @@ if (NGP_BUILD_WITH_GUI)
         dependencies/imgui/imgui_widgets.cpp
     )
 
+    # 添加NGP_GUI宏定义
     list(APPEND NGP_DEFINITIONS -DNGP_GUI)
 endif(NGP_BUILD_WITH_GUI)
 
 # 添加其他依赖项的路径
+# filesystem：文件系统库，用于处理文件和目录的操作，
+#   如路径解析、文件查找、文件创建和删除等
+# glm：用于数学计算和线性代数的库
+# nanovdb：用于稀疏体数据结构的库
+# NaturalSort：提供了一种自然排序算法，用于对字符串进行排序
+# tinylogger：轻量级的日志记录库，用于在应用程序中进行日志记录
 list(APPEND NGP_INCLUDE_DIRECTORIES
     "dependencies"
     "dependencies/filesystem"
@@ -357,9 +405,12 @@ list(APPEND NGP_INCLUDE_DIRECTORIES
     "dependencies/tinylogger"
 )
 
-# 查找并使用OpenMP
+# 查找并使用OpenMP：
+#   是一个并行编程的标准和接口，用于编写多线程和共享内存并行程序
+#   将串行代码转换为并行代码，以实现多线程的并行执行
 find_package(OpenMP)
 if (OPENMP_FOUND)
+    # 如果找到OpenMP，则将相应的编译标志添加到C和C++编译器选项中
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
@@ -367,38 +418,58 @@ endif()
 # 如果构建选项为NGP_BUILD_WITH_OPTIX，则添加OptiX相关依赖项
 if (NGP_BUILD_WITH_OPTIX)
     set(NGP_OPTIX ON)
+    # 添加OptiX依赖项的头文件路径
     list(APPEND NGP_INCLUDE_DIRECTORIES "dependencies/optix")
+    # 添加NGP_OPTIX宏定义
     list(APPEND NGP_DEFINITIONS -DNGP_OPTIX)
 endif()
 
 
+# 如果构建选项为NGP_BUILD_WITH_PYTHON_BINDINGS，
+#   则查找Python并添加pybind11依赖项
+# pybind11是一个用于将C++代码绑定到Python的开源库
+#   使得开发者能够直接在C++代码中定义Python模块、类和函数，
+#   并实现C++代码与Python之间的无缝交互。
 if (NGP_BUILD_WITH_PYTHON_BINDINGS)
+    # 查找Python的Interpreter和Development组件
     find_package(Python 3.7 COMPONENTS Interpreter Development)
     if (Python_FOUND)
+        # 添加pybind11的子目录进行构建
         add_subdirectory("dependencies/pybind11")
     endif()
 endif()
 
-
-# Compile zlib (only on Windows)
+# 编译zlib（仅在Windows平台）
+# zlib是一个用于数据压缩和解压缩的开源库
 if (WIN32)
+    # 设置使用静态链接的zlib选项
     set(ZLIB_USE_STATIC_LIBS ON CACHE BOOL " " FORCE)
     set(ZLIB_BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
     set(ZLIB_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
     set(SKIP_INSTALL_ALL ON CACHE BOOL " " FORCE)
+    # 添加zlib的子目录进行构建
     add_subdirectory("dependencies/zlib")
+    # 设置zlib的目标文件夹属性
     set_property(TARGET zlibstatic PROPERTY FOLDER "dependencies")
 
+    # 设置zlib的头文件和库路径
     set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/zlib" CACHE PATH " " FORCE)
     set(ZLIB_LIBRARY zlibstatic)
 
+    # 添加zlib的头文件路径
     include_directories(${ZLIB_INCLUDE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/dependencies/zlib")
 
+    # 将zlibstatic库添加到NGP_LIBRARIES列表中
+    # zlibstatic是zlib库的静态链接库（Static Linking）
     list(APPEND NGP_LIBRARIES zlibstatic)
 endif()
 
 
+# 添加zstr的子目录进行构建
+# zstr是一个开源的C++库，
+#   用于在处理文本数据时进行高效的压缩和解压缩操作。
 add_subdirectory("dependencies/zstr")
+# 将zstr库添加到NGP_LIBRARIES列表中
 list(APPEND NGP_LIBRARIES zstr::zstr)
 
 
@@ -412,6 +483,7 @@ list(APPEND NGP_INCLUDE_DIRECTORIES "include")
 if (NOT MSVC)
     list(APPEND NGP_LIBRARIES ${CMAKE_DL_LIBS})
 endif()
+# 添加GUI_SOURCES变量中的源文件路径到NGP_SOURCES列表中
 list(APPEND NGP_SOURCES
     ${GUI_SOURCES}
     src/camera_path.cu
@@ -432,10 +504,15 @@ list(APPEND NGP_SOURCES
 )
 
 # 设置输出目录
+# 设置可执行文件的输出目录为CMAKE_BINARY_DIR
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# 设置Release配置下的可执行文件的输出目录为CMAKE_BINARY_DIR
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR})
+# 设置RelWithDebInfo配置下的可执行文件的输出目录为CMAKE_BINARY_DIR
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_BINARY_DIR})
+# 设置MinSizeRel配置下的可执行文件的输出目录为CMAKE_BINARY_DIR
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_BINARY_DIR})
+# 设置Debug配置下的可执行文件的输出目录为CMAKE_BINARY_DIR
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR})
 
 # 获取CUDA编译器的路径
