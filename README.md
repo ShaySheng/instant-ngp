@@ -185,6 +185,39 @@ export PATH="/usr/local/cuda-11.4/bin:$PATH"
 export LD_LIBRARY_PATH="/usr/local/cuda-11.4/lib64:$LD_LIBRARY_PATH"
 ```
 
+
+#### Linux 如何安装新版的cmake
+
+```https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh```
+
+要在 Linux 中安装 CMake v3.26.4 的安装脚本包（cmake-3.26.4-linux-x86_64.sh），请按照以下详细步骤进行：
+
+1. 下载 CMake 的安装脚本包。在终端中使用 `wget` 命令下载该文件：
+   ```bash
+   wget https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh
+   ```
+
+2. 授予脚本执行权限。使用以下命令为脚本添加执行权限：
+   ```bash
+   chmod +x cmake-3.26.4-linux-x86_64.sh
+   ```
+
+3. 运行安装脚本。在终端中执行以下命令运行安装脚本：
+   ```bash
+   sudo ./cmake-3.26.4-linux-x86_64.sh --prefix=/usr/local --exclude-subdir
+   ```
+
+   这将在 `/usr/local` 目录下安装 CMake。你可以根据需要更改 `--prefix` 参数指定其他安装路径。
+
+4. 验证安装是否成功。在终端中运行以下命令：
+   ```bash
+   cmake --version
+   ```
+   如果安装成功，将显示安装的 CMake 版本信息。
+
+通过这些步骤，你将成功安装 CMake v3.26.4 的安装脚本包。请注意，这种方式安装的 CMake 不会自动进行更新，你需要手动更新到更高版本。建议在使用此方法之前备份任何重要的 CMake 相关文件和项目。
+
+
 ### 编译
 
 首先使用以下命令克隆该存储库及其所有子模块：
