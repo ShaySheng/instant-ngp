@@ -173,34 +173,6 @@ pip install cyclonedds
 4. 在应用程序上点击发送按钮。捕获的帧将被发送到__instant-ngp__。
 5. 切换训练。
 
-要保存数据集：
-1. 打开NeRFCapture应用程序。
-2. 运行带有`--save_path`标志的脚本。n_frames标志表示在保存数据集之前捕获多少帧。
-
-
-
-
-
-
-### NeRFCapture
-
-[NeRFCapture](https://github.com/jc211/NeRFCapture)是一款iOS应用程序，可在任何支持ARKit的设备上运行。它允许您直接从手机流式传输图像到__instant-ngp__，从而实现更互动的体验。它还可以收集用于后续使用的离线数据集。
-
-运行NeRFCapture脚本需要以下依赖项：
-```
-pip install cyclonedds
-```
-
-进行图像流式传输：
-1. 打开NeRFCapture应用程序。
-2. 运行脚本时启用`--stream`标志。
-	```
-	instant-ngp$ python scripts/nerfcapture2nerf.py --stream
-	```
-3. 等待应用程序与脚本之间建立连接。应用程序上会显示连接状态。
-4. 在应用程序上点击发送按钮。捕获的帧将被发送到__instant-ngp__。
-5. 切换训练模式。
-
 保存数据集：
 1. 打开NeRFCapture应用程序。
 2. 运行脚本并使用`--save_path`标志。`n_frames`参数指定在保存数据集之前要捕获的帧数。
