@@ -2,49 +2,48 @@
 
 <img src="docs/assets_readme/fox.gif" height="342"/> <img src="docs/assets_readme/robot5.gif" height="342"/>
 
-Ever wanted to train a NeRF model of a fox in under 5 seconds? Or fly around a scene captured from photos of a factory robot? Of course you have!
+曾经想过在不到5秒钟内训练一只狐狸的NeRF模型吗？或者在由工厂机器人的照片捕捉的场景中飞行？当然你想过！
 
-Here you will find an implementation of four __neural graphics primitives__, being neural radiance fields (NeRF), signed distance functions (SDFs), neural images, and neural volumes.
-In each case, we train and render a MLP with multiresolution hash input encoding using the [__tiny-cuda-nn__](https://github.com/NVlabs/tiny-cuda-nn) framework.
+在这里，您将找到四个神经图形基元的实现，包括神经辐射场（NeRF）、有符号距离函数（SDF）、神经图像和神经体积。
+在每种情况下，我们使用[__tiny-cuda-nn__](https://github.com/NVlabs/tiny-cuda-nn)框架训练和渲染一个具有多分辨率哈希输入编码的MLP。
 
-> __Instant Neural Graphics Primitives with a Multiresolution Hash Encoding__  
-> [Thomas Müller](https://tom94.net), [Alex Evans](https://research.nvidia.com/person/alex-evans), [Christoph Schied](https://research.nvidia.com/person/christoph-schied), [Alexander Keller](https://research.nvidia.com/person/alex-keller)  
-> _ACM Transactions on Graphics (__SIGGRAPH__), July 2022_  
-> __[Project page](https://nvlabs.github.io/instant-ngp)&nbsp;/ [Paper](https://nvlabs.github.io/instant-ngp/assets/mueller2022instant.pdf)&nbsp;/ [Video](https://nvlabs.github.io/instant-ngp/assets/mueller2022instant.mp4)&nbsp;/ [Presentation](https://tom94.net/data/publications/mueller22instant/mueller22instant-gtc.mp4)&nbsp;/ [Real-Time Live](https://tom94.net/data/publications/mueller22instant/mueller22instant-rtl.mp4)&nbsp;/ [BibTeX](https://nvlabs.github.io/instant-ngp/assets/mueller2022instant.bib)__
+> __使用多分辨率哈希编码的即时神经图形基元__  
+> [Thomas Müller](https://tom94.net)，[Alex Evans](https://research.nvidia.com/person/alex-evans)，[Christoph Schied](https://research.nvidia.com/person/christoph-schied)，[Alexander Keller](https://research.nvidia.com/person/alex-keller)  
+> _ACM计算机图形学交易（__SIGGRAPH__），2022年7月_  
+> __[项目页面](https://nvlabs.github.io/instant-ngp)&nbsp;/ [论文](https://nvlabs.github.io/instant-ngp/assets/mueller2022instant.pdf)&nbsp;/ [视频](https://nvlabs.github.io/instant-ngp/assets/mueller2022instant.mp4)&nbsp;/ [演示](https://tom94.net/data/publications/mueller22instant/mueller22instant-gtc.mp4)&nbsp;/ [实时直播](https://tom94.net/data/publications/mueller22instant/mueller22instant-rtl.mp4)&nbsp;/ [BibTeX](https://nvlabs.github.io/instant-ngp/assets/mueller2022instant.bib)__
 
-For business inquiries, please submit the [NVIDIA research licensing form](https://www.nvidia.com/en-us/research/inquiries/).
+有关业务合作，请填写[NVIDIA研究许可表格](https://www.nvidia.com/en-us/research/inquiries/)。
 
+## 安装
 
-## Installation
+如果您使用的是Windows操作系统，请下载与您的显卡对应的以下发布版本，并进行解压。然后，启动`instant-ngp.exe`。
 
-If you have Windows, download one of the following releases corresponding to your graphics card and extract it. Then, start `instant-ngp.exe`.
+- [**RTX 3000和4000系列、RTX A4000-A6000**和其他Ampere和Ada显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-RTX-3000-and-4000.zip)
+- [**RTX 2000系列、Titan RTX、Quadro RTX 4000-8000**和其他图灵显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-RTX-2000.zip)
+- [**GTX 1000系列、Titan Xp、Quadro P1000-P6000**和其他
 
-- [**RTX 3000 & 4000 series, RTX A4000&ndash;A6000**, and other Ampere & Ada cards](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-RTX-3000-and-4000.zip)
-- [**RTX 2000 series, Titan RTX, Quadro RTX 4000&ndash;8000**, and other Turing cards](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-RTX-2000.zip)
-- [**GTX 1000 series, Titan Xp, Quadro P1000&ndash;P6000**, and other Pascal cards](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-GTX-1000.zip)
+帕斯卡显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-GTX-1000.zip)
 
-Keep reading for a guided tour of the application or, if you are interested in creating your own NeRF, watch [the video tutorial](https://www.youtube.com/watch?v=3TWxO1PftMc) or read the [written instructions](docs/nerf_dataset_tips.md).
+继续阅读以了解应用程序的导览，或者如果您有兴趣创建自己的NeRF，请观看[视频教程](https://www.youtube.com/watch?v=3TWxO1PftMc)或阅读[书面说明](docs/nerf_dataset_tips.md)。
 
-If you use Linux, or want the [developer Python bindings](https://github.com/NVlabs/instant-ngp#python-bindings), or if your GPU is not listed above (e.g. Hopper, Volta, or Maxwell generations), you need to [build __instant-ngp__ yourself](https://github.com/NVlabs/instant-ngp#building-instant-ngp-windows--linux).
+如果您使用Linux，或者想要[开发者Python绑定](https://github.com/NVlabs/instant-ngp#python-bindings)，或者如果您的GPU未在上述列表中（例如Hopper、Volta或Maxwell架构），您需要自行[构建__instant-ngp__](https://github.com/NVlabs/instant-ngp#building-instant-ngp-windows--linux)。
 
-
-## Usage
+## 使用
 
 <img src="docs/assets_readme/testbed.png" width="100%"/>
 
-__instant-ngp__ comes with an interactive GUI that includes many features:
-- [comprehensive controls](https://github.com/NVlabs/instant-ngp#keyboard-shortcuts-and-recommended-controls) for interactively exploring neural graphics primitives,
-- [VR mode](https://github.com/NVlabs/instant-ngp#vr-controls) for viewing neural graphics primitives through a virtual-reality headset,
-- saving and loading "snapshots" so you can share your graphics primitives on the internet,
-- a camera path editor to create videos,
-- `NeRF->Mesh` and `SDF->Mesh` conversion,
-- camera pose and lens optimization,
-- and many more.
+__instant-ngp__带有一个交互式GUI，具有许多功能：
+- [全面的控制](https://github.com/NVlabs/instant-ngp#keyboard-shortcuts-and-recommended-controls)，可交互地探索神经图形基元，
+- [VR模式](https://github.com/NVlabs/instant-ngp#vr-controls)，通过虚拟现实头盔查看神经图形基元，
+- 保存和加载“快照”，以便您可以在互联网上分享您的图形基元，
+- 摄像机路径编辑器以创建视频，
+- `NeRF->Mesh`和`SDF->Mesh`转换，
+- 摄像机姿势和镜头优化，
+- 还有许多其他功能。
 
+### NeRF狐狸
 
-### NeRF fox
-
-Simply start `instant-ngp` and drag the `data/nerf/fox` folder into the window. Or, alternatively, use the command line:
+只需启动`instant-ngp`并将`data/nerf/fox`文件夹拖放到窗口中。或者，您也可以使用命令行：
 
 ```sh
 instant-ngp$ ./instant-ngp data/nerf/fox
@@ -52,11 +51,11 @@ instant-ngp$ ./instant-ngp data/nerf/fox
 
 <img src="docs/assets_readme/fox.png"/>
 
-You can use __any__ NeRF-compatible dataset, e.g. from [original NeRF](https://drive.google.com/drive/folders/1JDdLGDruGNXWnM1eqY1FNL9PlStjaKWi), the [SILVR dataset](https://github.com/IDLabMedia/large-lightfields-dataset), or the [DroneDeploy dataset](https://github.com/nickponline/dd-nerf-dataset). **To create your own NeRF, watch [the video tutorial](https://www.youtube.com/watch?v=3TWxO1PftMc) or read the [written instructions](docs/nerf_dataset_tips.md).**
+您可以使用__任何__与NeRF兼容的数据集，例如[原始NeRF数据集](https://drive.google.com/drive/folders/1JDdLGDruGNXWnM1eqY1FNL9PlStjaKWi)，[SILVR数据集](https://github.com/IDLabMedia/large-lightfields-dataset)或[DroneDeploy数据集](https://github.com/nickponline/dd-nerf-dataset)。**要创建自己的NeRF模型，请观看[视频教程](https://www.youtube.com/watch?v=3TWxO1PftMc)或阅读[书面说明](docs/nerf_dataset_tips.md)。**
 
-### SDF armadillo
+### SDF豪猪
 
-Drag `data/sdf/armadillo.obj` into the window or use the command:
+将`data/sdf/armadillo.obj`拖放到窗口中，或使用以下命令：
 
 ```sh
 instant-ngp$ ./instant-ngp data/sdf/armadillo.obj
@@ -64,9 +63,9 @@ instant-ngp$ ./instant-ngp data/sdf/armadillo.obj
 
 <img src="docs/assets_readme/armadillo.png"/>
 
-### Image of Einstein
+### Einstein的图像
 
-Drag `data/image/albert.exr` into the window or use the command:
+将`data/image/albert.exr`拖放到窗口中，或使用以下命令：
 
 ```sh
 instant-ngp$ ./instant-ngp data/image/albert.exr
@@ -74,268 +73,262 @@ instant-ngp$ ./instant-ngp data/image/albert.exr
 
 <img src="docs/assets_readme/albert.png"/>
 
-To reproduce the gigapixel results, download, for example, [the Tokyo image](https://www.flickr.com/photos/trevor_dobson_inefekt69/29314390837) and convert it to `.bin` using the `scripts/convert_image.py` script. This custom format improves compatibility and loading speed when resolution is high. Now you can run:
+要重现十亿像素的结果，请下载，例如，[东京图像](https://www.flickr.com/photos/trevor_dobson_inefekt69/29314390837)，并使用`scripts/convert_image.py`脚本将其转换为`.bin`格式。这种自定义格式在分辨率较高时提高了兼容性和加载速度。现在，您可以运行以下命令：
 
 ```sh
 instant-ngp$ ./instant-ngp data/image/tokyo.bin
 ```
 
+### 体积渲染器
 
-### Volume renderer
-
-Download the [nanovdb volume for the Disney cloud](https://drive.google.com/drive/folders/1SuycSAOSG64k2KLV7oWgyNWyCvZAkafK?usp=sharing), which is derived [from here](https://disneyanimation.com/data-sets/?drawer=/resources/clouds/) ([CC BY-SA 3.0](https://media.disneyanimation.com/uploads/production/data_set_asset/6/asset/License_Cloud.pdf)). Then drag `wdas_cloud_quarter.nvdb` into the window or use the command:
+下载[迪士尼云朵的nanovdb体积](https://drive.google.com/drive/folders/1SuycSAOSG64k2KLV7oWgyNWyCvZAkafK?usp=sharing)，该体积派生自[这里](https://disneyanimation.com/data-sets/?drawer=/resources/clouds/)（[CC BY-SA 3.0](https://media.disneyanimation.com/uploads/production/data_set_asset/6/asset/License_Cloud.pdf)）。然后，将`wdas_cloud_quarter.nvdb`拖放到窗口中，或使用以下命令：
 
 ```sh
 instant-ngp$ ./instant-ngp wdas_cloud_quarter.nvdb
 ```
+
 <img src="docs/assets_readme/cloud.png"/>
 
+### 键盘快捷键和推荐控制方式
 
-### Keyboard shortcuts and recommended controls
+以下是__instant-ngp__应用程序的主要键盘控制方式。
 
-Here are the main keyboard controls for the __instant-ngp__ application.
-
-| Key             | Meaning       |
+| 键              | 意思           |
 | :-------------: | ------------- |
-| WASD            | Forward / pan left / backward / pan right. |
-| Spacebar / C    | Move up / down. |
-| = or + / - or _ | Increase / decrease camera velocity (first person mode) or zoom in / out (third person mode). |
-| E / Shift+E     | Increase / decrease exposure. |
-| Tab             | Toggle menu visibility. |
-| T               | Toggle training. After around two minutes training tends to settle down, so can be toggled off. |
-| { }             | Go to the first/last training image camera view. |
-| [ ]             | Go to the previous/next training image camera view. |
-| R               | Reload network from file. |
-| Shift+R         | Reset camera. |
-| O               | Toggle visualization or accumulated error map. |
-| G               | Toggle visualization of the ground truth. |
-| M               | Toggle multi-view visualization of layers of the neural model. See the paper's video for a little more explanation. |
-| , / .           | Shows the previous / next visualized layer; hit M to escape. |
-| 1-8             | Switches among various render modes, with 2 being the standard one. You can see the list of render mode names in the control interface. |
+| WASD            | 前进/向左平移/后退/向右平移。 |
+| Spacebar / C    | 上移/下移。 |
+| =或+ / -或_     | 增加/减少相机速度（第一人称模式）或放大/缩小（第三人称模式）。 |
+| E / Shift+E     | 增加/减少曝光。 |
+| Tab             | 切换菜单可见性。 |
+| T               | 切换训练。大约两分钟后，训练趋于稳定，可以切换为关闭状态。 |
+| { }             | 转到第一张/最后一张训练图像的相机视图。 |
+| [ ]             | 转到上一个/下一个训练图像的相机视图。 |
+| R               | 重新加载文件中的网络。 |
+| Shift+R         | 重置相机。 |
+| O               | 切换可视化或累积误差图。 |
+| G               | 切换地面真实图像的可视化。 |
+| M               | 切换神经模型层的多视角可视化。有关更多说明，请参阅论文中的视频。 |
+| , / .           | 显示上一个/下一个可视化的层；按M键退出。 |
+| 1-8             | 在各种渲染模式之间切换，其中2是标准模式。您可以在控制界面中查看渲染模式名称列表。 |
 
-There are many controls in the __instant-ngp__ GUI.
-First, note that this GUI can be moved and resized, as can the "Camera path" GUI (which first must be expanded to be used).
+在__instant-ngp__的GUI中有许多控件。
+首先，请注意此GUI可以移动和调整大小，"Camera path" GUI也可以如此（但首先必须展开才能使用）。
 
-Recommended user controls in __instant-ngp__ are:
+__instant-ngp__中推荐的用户控制方式包括：
 
-* __Snapshot:__ use "Save" to save the trained NeRF, "Load" to reload.
-* __Rendering -> DLSS:__ toggling this on and setting "DLSS sharpening" to 1.0 can often improve rendering quality.
-* __Rendering -> Crop size:__ trim back the surrounding environment to focus on the model. "Crop aabb" lets you move the center of the volume of interest and fine tune. See more about this feature in [our NeRF training & dataset tips](https://github.com/NVlabs/instant-ngp/blob/master/docs/nerf_dataset_tips.md).
+* __Snapshot：__ 使用"Save"保存训练好的NeRF模型，使用"Load"重新加载模型。
+* __Rendering -> DLSS：__ 打开此选项并将"DLSS sharpening"设置为1.0，通常可以提高渲染质量。
+* __Rendering -> Crop size：__ 裁剪周围环境以聚焦于模型。"Crop aabb"可让您移动感兴趣区域的中心并进行微调。在我们的NeRF训练和数据集提示中了解更多关于此功能的信息（https://github.com/NVlabs/instant-ngp/blob/master/docs/nerf_dataset_tips.md）。
 
-The "Camera path" GUI lets you create a camera path for rendering a video.
-The button "Add from cam" inserts keyframes from the current perspective.
-Then, you can render a video `.mp4` of your camera path or export the keyframes to a `.json` file.
-There is a bit more information about the GUI [in this post](https://developer.nvidia.com/blog/getting-started-with-nvidia-instant-nerfs/) and [in this video guide to creating your own video](https://www.youtube.com/watch?v=3TWxO1PftMc).
+"相机路径" GUI 允许您创建用于渲染视频的相机路径。
+"从相机添加" 按钮会在当前视角插入关键帧。
+然后，您可以渲染相机路径的视频 `.mp4` 或将关键帧导出为 `.json` 文件。
+关于 GUI 的更多信息，请参考[此文章](https://developer.nvidia.com/blog/getting-started-with-nvidia-instant-nerfs/)和[此视频指南](https://www.youtube.com/watch?v=3TWxO1PftMc)。
 
+### VR 控制
 
-### VR controls
+要在 VR 中查看神经图形原语，请首先启动 VR 运行时。这可能是
+- 如果您使用 Oculus Rift 或 Meta Quest（使用连接线）头戴设备，则可能是 __OculusVR__。
+- 如果您使用其他头戴设备，则可能是 __SteamVR__。
+- 任何兼容 OpenXR 的运行时都可以使用。
 
-To view the neural graphics primitive in VR, first start your VR runtime. This will most likely be either
-- __OculusVR__ if you have an Oculus Rift or Meta Quest (with link cable) headset, and
-- __SteamVR__ if you have another headset.
-- Any OpenXR-compatible runtime will work.
+然后，在 __instant-ngp__ GUI 中点击 __连接到 VR/AR 头戴设备__ 按钮，并戴上头戴设备。
+在进入 VR 之前，我们强烈建议您先完成训练（点击 "停止训练"）或加载预训练快照以获得最佳性能。
 
-Then, press the __Connect to VR/AR headset__ button in the __instant-ngp__ GUI and put on your headset.
-Before entering VR, we **strongly** recommend that you first finish training (press "Stop training") or load a pre-trained snapshot for maximum performance.
+在 VR 中，您可以使用以下控制方式：
 
-In VR, you have the following controls.
-
-| Control                | Meaning       |
+| 控制方式               | 含义       |
 | :--------------------: | ------------- |
-| Left stick / trackpad  | Move |
-| Right stick / trackpad | Turn camera |
-| Press stick / trackpad | Erase NeRF around the hand |
-| Grab (one-handed)      | Drag neural graphics primitive |
-| Grab (two-handed)      | Rotate and zoom (like pinch-to-zoom on a smartphone) |
+| 左摇杆 / 触摸板  | 移动 |
+| 右摇杆 / 触摸板 | 旋转相机 |
+| 按下摇杆 / 触摸板 | 擦除手部周围的 NeRF |
+| 抓取（单手）      | 拖动神经图形原语 |
+| 抓取（双手）      | 旋转和缩放（类似于手机上的捏合缩放） |
 
+## 构建 instant-ngp（Windows和Linux）
 
-## Building instant-ngp (Windows & Linux)
+### 要求
 
-### Requirements
+- 一块__NVIDIA GPU__；如果有张量核心，则性能会更好。所有显示的结果都来自于RTX 3090。
+- 一个支持__C++14__的编译器。推荐以下选择并已经过测试：
+  - __Windows：__ Visual Studio 2019或2022
+  - __Linux：__ GCC/G++ 8或更高版本
+- 最新版本的__[CUDA](https://developer.nvidia.com/cuda-toolkit)__。推荐以下选择并已经过测试：
+  - __Windows：__ CUDA 11.5或更高版本
+  - __Linux：__ CUDA 10.2或更高版本
+- __[CMake](https://cmake.org/) v3.21或更高版本__。
+- __(可选) [Python](https://www.python.org/) 3.7或更高版本__ 以进行交互式绑定。还需运行 `pip install -r requirements.txt`。
+- __(可选) [OptiX](https://developer.nvidia.com/optix) 7.6或更高版本__ 以加快网格SDF训练速度。
+- __(可选) [Vulkan SDK](https://vulkan.lunarg.com/)__ 以支持DLSS。
 
-- An __NVIDIA GPU__; tensor cores increase performance when available. All shown results come from an RTX 3090.
-- A __C++14__ capable compiler. The following choices are recommended and have been tested:
-  - __Windows:__ Visual Studio 2019 or 2022
-  - __Linux:__ GCC/G++ 8 or higher
-- A recent version of __[CUDA](https://developer.nvidia.com/cuda-toolkit)__. The following choices are recommended and have been tested:
-  - __Windows:__ CUDA 11.5 or higher
-  - __Linux:__ CUDA 10.2 or higher
-- __[CMake](https://cmake.org/) v3.21 or higher__.
-- __(optional) [Python](https://www.python.org/) 3.7 or higher__ for interactive bindings. Also, run `pip install -r requirements.txt`.
-- __(optional) [OptiX](https://developer.nvidia.com/optix) 7.6 or higher__ for faster mesh SDF training.
-- __(optional) [Vulkan SDK](https://vulkan.lunarg.com/)__ for DLSS support.
-
-
-If you are using Debian based Linux distribution, install the following packages
+如果您使用基于Debian的Linux发行版，请安装以下软件包：
 ```sh
 sudo apt-get install build-essential git python3-dev python3-pip libopenexr-dev libxi-dev \
                      libglfw3-dev libglew-dev libomp-dev libxinerama-dev libxcursor-dev
 ```
 
-Alternatively, if you are using Arch or Arch derivatives, install the following packages
+或者，如果您使用的是Arch或Arch衍生发行版，请安装以下软件包：
 ```sh
 sudo pacman -S cuda base-devel cmake openexr libxi glfw openmp libxinerama libxcursor
 ```
 
-We also recommend installing [CUDA](https://developer.nvidia.com/cuda-toolkit) and [OptiX](https://developer.nvidia.com/optix) in `/usr/local/` and adding the CUDA installation to your PATH.
+我们还建议将[CUDA](https://developer.nvidia.com/cuda-toolkit)和[OptiX](https://developer.nvidia.com/optix)安装在`/usr/local/`目录下，并将CUDA安装路径添加到PATH环境变量中。
 
-For example, if you have CUDA 11.4, add the following to your `~/.bashrc`
+例如，如果您有CUDA 11.4，请在`~/.bashrc`文件中添加以下内容：
 ```sh
 export PATH="/usr/local/cuda-11.4/bin:$PATH"
 export LD_LIBRARY_PATH="/usr/local/cuda-11.4/lib64:$LD_LIBRARY_PATH"
 ```
 
+### 编译
 
-### Compilation
-
-Begin by cloning this repository and all its submodules using the following command:
+首先使用以下命令克隆该存储库及其所有子模块：
 ```sh
 $ git clone --recursive https://github.com/nvlabs/instant-ngp
 $ cd instant-ngp
 ```
 
-Then, use CMake to build the project: (on Windows, this must be in a [developer command prompt](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160#developer_command_prompt))
+然后，使用CMake构建项目（在Windows上，必须使用[开发人员命令提示符](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160#developer_command_prompt)）：
 ```sh
 instant-ngp$ cmake . -B build
 instant-ngp$ cmake --build build --config RelWithDebInfo -j
 ```
 
-If compilation fails inexplicably or takes longer than an hour, you might be running out of memory. Try running the above command without `-j` in that case.
-If this does not help, please consult [this list of possible fixes](https://github.com/NVlabs/instant-ngp#troubleshooting-compile-errors) before opening an issue.
+如果编译失败或耗时超过一个小时，请检查是否内存不足。在这种情况下，尝试不使用`-j`运行上述命
 
-If the build succeeds, you can now run the code via the `./instant-ngp` executable or the `scripts/run.py` script described below.
+令。
+如果问题仍然存在，请在报告问题之前，请参考[此处的可能解决方法列表](https://github.com/NVlabs/instant-ngp#troubleshooting-compile-errors)。
 
-If automatic GPU architecture detection fails, (as can happen if you have multiple GPUs installed), set the `TCNN_CUDA_ARCHITECTURES` environment variable for the GPU you would like to use. The following table lists the values for common GPUs. If your GPU is not listed, consult [this exhaustive list](https://developer.nvidia.com/cuda-gpus).
+如果编译成功，现在您可以通过`./instant-ngp`可执行文件或下面描述的`scripts/run.py`脚本来运行代码。
+
+
+如果自动GPU架构检测失败（例如，如果您安装了多个GPU），请为您希望使用的GPU设置`TCNN_CUDA_ARCHITECTURES`环境变量。以下表格列出了常见GPU的值。如果您的GPU未列出，请参考[此详尽列表](https://developer.nvidia.com/cuda-gpus)。
 
 | H100 | 40X0 | 30X0 | A100 | 20X0 | TITAN V / V100 | 10X0 / TITAN Xp | 9X0 | K80 |
 |:----:|:----:|:----:|:----:|:----:|:--------------:|:---------------:|:---:|:---:|
 |   90 |   89 |   86 |   80 |   75 |             70 |              61 |  52 |  37 |
 
 
-## Python bindings
+## Python绑定
 
-After you have built __instant-ngp__, you can use its Python bindings to conduct controlled experiments in an automated fashion.
-All features from the interactive GUI (and more!) have Python bindings that can be easily instrumented.
-For an example of how the `./instant-ngp` application can be implemented and extended from within Python, see `./scripts/run.py`, which supports a superset of the command line arguments that `./instant-ngp` does.
+在构建好__instant-ngp__之后，您可以使用其Python绑定以自动化方式进行受控实验。所有与交互式GUI相同的功能（甚至更多）都具有可以轻松使用的Python绑定。有关如何从Python中实现和扩展`./instant-ngp`应用程序的示例，请参见`./scripts/run.py`，它支持`./instant-ngp`支持的命令行参数的超集。
 
-If you would rather build new models from the hash encoding and fast neural networks, consider [__tiny-cuda-nn__'s PyTorch extension](https://github.com/nvlabs/tiny-cuda-nn#pytorch-extension).
+如果您更愿意从哈希编码和快速神经网络构建新模型，请考虑使用[tiny-cuda-nn的PyTorch扩展](https://github.com/nvlabs/tiny-cuda-nn#pytorch-extension)。
 
-Happy hacking!
+祝您愉快！
 
+## 附加资源
 
-## Additional resources
+- [NVIDIA Instant NeRF快速入门博文](https://developer.nvidia.com/blog/getting-started-with-nvidia-instant-nerfs/)
+- [用于高级NeRF数据集创建的SIGGRAPH教程](https://www.nvidia.com/en-us/on-demand/session/siggraph2022-sigg22-s-16/)。
 
-- [Getting started with NVIDIA Instant NeRF blog post](https://developer.nvidia.com/blog/getting-started-with-nvidia-instant-nerfs/)
-- [SIGGRAPH tutorial for advanced NeRF dataset creation](https://www.nvidia.com/en-us/on-demand/session/siggraph2022-sigg22-s-16/).
+## 常见问题（FAQ）
 
+__问：__ 我的自定义数据集的NeRF重建效果不好，我该怎么办？
 
-## Frequently asked questions (FAQ)
-
-__Q:__ The NeRF reconstruction of my custom dataset looks bad; what can I do?
-
-__A:__ There could be multiple issues:
-- COLMAP might have been unable to reconstruct camera poses.
-- There might have been movement or blur during capture. Don't treat capture as an artistic task; treat it as photogrammetry. You want _\*as little blur as possible\*_ in your dataset (motion, defocus, or otherwise) and all objects must be _\*static\*_ during the entire capture. Bonus points if you are using a wide-angle lens (iPhone wide angle works well), because it covers more space than narrow lenses.
-- The dataset parameters (in particular `aabb_scale`) might have been tuned suboptimally. We recommend starting with `aabb_scale=128` and then increasing or decreasing it by factors of two until you get optimal quality.
-- Carefully read [our NeRF training & dataset tips](https://github.com/NVlabs/instant-ngp/blob/master/docs/nerf_dataset_tips.md).
+__答：__ 可能有多个问题：
+- COLMAP可能无法重建相机姿态。
+- 捕捉过程中可能存在运动或模糊。不要将捕捉视为一项艺术任务；将其视为摄影测量。您的数据集中应该有_尽可能少的模糊_（运动模糊、散焦或其他模糊），并且所有物体在整个捕捉过程中都必须_保持静止_。如果使用广角镜头（如iPhone广角镜头），它比窄镜头涵盖的空间更多，可以获得额外的优势。
+- 数据集参数（特别是`aabb_scale`）可能被调整得不够理想。我们建议从`aabb_scale=128`开始，然后按二倍数增加或减少，直到获得最佳质量。
+- 请仔细阅读[我们的NeRF训练和数据集提示](https://github.com/NVlabs/instant-ngp/blob/master/docs/nerf_dataset_tips.md)。
 
 ##
-__Q:__ How can I save the trained model and load it again later?
+__问：__ 我如何保存训练好的模型并在以后重新加载它？
 
-__A:__ Two options:
-1. Use the GUI's "Snapshot" section.
-2. Use the Python bindings `load_snapshot` / `save_snapshot` (see `scripts/run.py` for example usage).
-
-##
-__Q:__ Can this codebase use multiple GPUs at the same time?
-
-__A:__ Only for VR rendering, in which case one GPU is used per eye. Otherwise, no. To select a specific GPU to run on, use the [CUDA_VISIBLE_DEVICES](https://stackoverflow.com/questions/39649102/how-do-i-select-which-gpu-to-run-a-job-on) environment variable. To optimize the _compilation_ for that specific GPU use the [TCNN_CUDA_ARCHITECTURES](https://github.com/NVlabs/instant-ngp#compilation-windows--linux) environment variable.
+__答：__ 有两个选项：
+1. 使用GUI的"Snapshot"部分。
+2. 使用Python绑定的`load_snapshot` / `save_snapshot`函数（请参阅`scripts/run.py`以获取示例用法）。
 
 ##
-__Q:__ How can I run __instant-ngp__ in headless mode?
+__问：__ 这个代码库可以同时使用多个GPU吗？
 
-__A:__ Use `./instant-ngp --no-gui` or `python scripts/run.py`. You can also compile without GUI via `cmake -DNGP_BUILD_WITH_GUI=off ...`
-
-##
-__Q:__ Does this codebase run on [Google Colab](https://colab.research.google.com/)?
-
-__A:__ Yes. See [this example](./notebooks/instant_ngp.ipynb) inspired on the notebook created by user [@myagues](https://github.com/NVlabs/instant-ngp/issues/6#issuecomment-1016397579). Caveat: this codebase requires large amounts of GPU RAM and might not fit on your assigned GPU. It will also run slower on older GPUs.
+__答：__ 只有在VR渲染中才能使用多个GPU，每个眼睛使用一个GPU。其他情况下不能。要选择要运行的特定GPU，请使用[CUDA_VISIBLE_DEVICES](https://stackoverflow.com/questions/39649102/how-do-i-select-which-gpu-to-run-a-job-on)环境变量。要针对该特定GPU进行优化_编译_，请使用[TCNN_CUDA_ARCHITECTURES](https://github.com/NVlabs/instant-ngp#compilation-windows--linux)环境变量。
 
 ##
-__Q:__ Is there a [Docker container](https://www.docker.com/)?
+__问：__ 如何在无头模式下运行__instant-ngp__？
 
-__A:__ Yes. We bundle a [Visual Studio Code development container](https://code.visualstudio.com/docs/remote/containers), the `.devcontainer/Dockerfile` of which you can also use stand-alone. 
+__答：__ 使用`./instant-ngp --no-gui`或`python scripts/run.py`。您还可以通过`cmake -DNGP_BUILD_WITH_GUI=off ...`编译时禁用GUI。
 
-If you want to run the container without using VSCode:
+##
+__问：__ 这个代码库能在[Google Colab](https://colab.research.google.com/)上运行吗？
+
+__答：__ 是的。请参阅[此示例](./notebooks/instant_ngp.ipynb)，该示例受到用户[@myagues](https://github.com/NVlabs/instant-ngp/issues/6#issuecomment-1016397579)创建的笔记本的启发。注意：该代码库需要大量的GPU内存，可能无法适应您分配的GPU。在旧的GPU上运行速度也会较慢。
+
+##
+__问：__ 是否有[Docker容器](https://www.docker.com/)？
+
+__答：__ 是的。我们提供了一个[Visual Studio Code开发容器](https://code.visualstudio.com/docs/remote/containers)，您也可以单独使用`.devcontainer/Dockerfile`。
+
+如果您想在不使用VSCode的情况下运行容器：
 ```
 docker-compose -f .devcontainer/docker-compose.yml build instant-ngp
 xhost local:root
 docker-compose -f .devcontainer/docker-compose.yml run instant-ngp /bin/bash
 ```
-Then run the build commands above as normal.
+然后按照上面的构建命令正常运行。
 
 ##
-__Q:__ How can I edit and train the underlying hash encoding or neural network on a new task?
+__问：__ 如何编辑和训练底层的哈希编码或神经网络以用于新任务？
 
-__A:__ Use [__tiny-cuda-nn__'s PyTorch extension](https://github.com/nvlabs/tiny-cuda-nn#pytorch-extension).
-
-##
-__Q:__ What is the coordinate system convention?
-
-__A:__ See [this helpful diagram](https://github.com/NVlabs/instant-ngp/discussions/153?converting=1#discussioncomment-2187652) by user @jc211.
+__答：__ 使用[__tiny-cuda-nn__的PyTorch扩展](https://github.com/nvlabs/tiny-cuda-nn#pytorch-extension)。
 
 ##
-__Q:__ Why are background colors randomized during NeRF training?
+__问：__ 坐标系统的约定是什么？
 
-__A:__ Transparency in the training data indicates a desire for transparency in the learned model. Using a solid background color, the model can minimize its loss by simply predicting that background color, rather than transparency (zero density). By randomizing the background colors, the model is _forced_ to learn zero density to let the randomized colors "shine through".
+__答：__ 请参阅用户@jc211的[这个有用的图示](https://github.com/NVlabs/instant-ngp/discussions/153?converting=1#discussioncomment-2187652)。
 
 ##
-__Q:__ How to mask away NeRF training pixels (e.g. for dynamic object removal)?
+__问：__ 为什么在NeRF训练期间背景颜色是随机的？
 
-__A:__ For any training image `xyz.*` with dynamic objects, you can provide a `dynamic_mask_xyz.png` in the same folder. This file must be in PNG format, where _non-zero_ pixel values indicate masked-away regions.
+__答：__ 训练数据中的透明度表示对学习模型的透明度的需求。如果使用纯色背景，模型可以通过简单地预测该背景颜色来最小化损失，而不是预测透明度（零密度）。通过随机化背景颜色，模型被_强制_学习零密度，以便让随机化的颜色“透过来”。
 
-## Troubleshooting compile errors
+##
+__问：__ 如何遮罩掉NeRF训练像素（例如用于动态对象去除）？
 
-Before investigating further, make sure all submodules are up-to-date and try compiling again.
+__答：__ 对于任何具有动态对象的训练图像`xyz.*`，您可以在同一文件夹中提供一个名为`dynamic_mask_xyz.png`的文件。该文件必须是PNG格式，其中_非零_像素值表示遮罩区域。
+
+## 解决编译错误
+
+在进一步调查之前，请确保所有子模块都是最新的，并尝试重新编译。
 ```sh
 instant-ngp$ git submodule sync --recursive
 instant-ngp$ git submodule update --init --recursive
 ```
-If __instant-ngp__ still fails to compile, update CUDA as well as your compiler to the latest versions you can install on your system. It is crucial that you update _both_, as newer CUDA versions are not always compatible with earlier compilers and vice versa.
-If your problem persists, consult the following table of known issues.
+如果__instant-ngp__仍然无法编译，请将CUDA和编译器更新到您的系统上可以安装的最新版本。重要的是要同时更新_两者_，因为较新的CUDA版本不一定与较早的编译器兼容，反之亦然。
+如果问题仍然存在，请参考以下已知问题列表。
 
-**\*After each step, delete the `build` folder and let CMake regenerate it before trying again.\***
+**\*在每个步骤之后，删除`build`文件夹并让CMake重新生成它，然后再尝试。\***
 
-| Problem | Resolution |
+| 问题 | 解决方案 |
 |---------|------------|
-| __CMake error:__ No CUDA toolset found / CUDA_ARCHITECTURES is empty for target "cmTC_0c70f" | __Windows:__ the Visual Studio CUDA integration was not installed correctly. Follow [these instructions](https://github.com/mitsuba-renderer/mitsuba2/issues/103#issuecomment-618378963) to fix the problem without re-installing CUDA. ([#18](https://github.com/NVlabs/instant-ngp/issues/18)) |
-| | __Linux:__ Environment variables for your CUDA installation are probably incorrectly set. You may work around the issue using ```cmake . -B build -DCMAKE_CUDA_COMPILER=/usr/local/cuda-<your cuda version>/bin/nvcc``` ([#28](https://github.com/NVlabs/instant-ngp/issues/28)) |
-| __CMake error:__ No known features for CXX compiler "MSVC" | Reinstall Visual Studio & make sure you run CMake from a developer shell. Make sure you delete the build folder before building again. ([#21](https://github.com/NVlabs/instant-ngp/issues/21)) |
-| __Compile error:__ A single input file is required for a non-link phase when an outputfile is specified | Ensure there no spaces in the path to __instant-ngp__. Some build systems seem to have trouble with those. ([#39](https://github.com/NVlabs/instant-ngp/issues/39) [#198](https://github.com/NVlabs/instant-ngp/issues/198)) |
-| __Compile error:__ undefined references to "cudaGraphExecUpdate" / identifier "cublasSetWorkspace" is undefined | Update your CUDA installation (which is likely 11.0) to 11.3 or higher. ([#34](https://github.com/NVlabs/instant-ngp/issues/34) [#41](https://github.com/NVlabs/instant-ngp/issues/41) [#42](https://github.com/NVlabs/instant-ngp/issues/42)) |
-| __Compile error:__ too few arguments in function call | Update submodules with the above two `git` commands. ([#37](https://github.com/NVlabs/instant-ngp/issues/37) [#52](https://github.com/NVlabs/instant-ngp/issues/52)) |
-| __Python error:__ No module named 'pyngp' | It is likely that CMake did not detect your Python installation and therefore did not build `pyngp`. Check CMake logs to verify this. If `pyngp` was built in a different folder than `build`, Python will be unable to detect it and you have to supply the full path to the import statement. ([#43](https://github.com/NVlabs/instant-ngp/issues/43)) |
+| __CMake错误：__ 找不到CUDA工具集/目标“cmTC_0c70f”的CUDA_ARCHITECTURES为空 | __Windows：__ Visual Studio CUDA集成未正确安装。按照[这些说明](https://github.com/mitsuba-renderer/mitsuba2/issues/103#issuecomment-618378963)修复问题，无需重新安装CUDA。([#18](https://github.com/NVlabs/instant-ngp/issues/18)) |
+| | __Linux：__ 您CUDA安装的环境变量可能设置不正确。您可以通过使用```cmake . -B build -DCMAKE_CUDA_COMPILER=/usr/local/cuda-<your cuda version>/bin/nvcc```绕过此问题。([#28](https://github.com/NVlabs/instant-ngp/issues/28)) |
+| __CMake错误：__ CXX编译器"MSVC"没有已知的功能 | 重新安装Visual Studio，并确保从开发者shell中运行CMake。在重新构建之前，请确保删除构建文件夹。([#21](https://github.com/NVlabs/instant-ngp/issues/21)) |
+| __编译错误：__ 非链接阶段需要一个输入文件，但指定了输出文件 | 确保__instant-ngp__的路径中没有空格。一些构建系统似乎对其中存在的空格有问题。([#39](https://github.com/NVlabs/instant-ngp/issues/39) [#198](https://github.com/NVlabs/instant-ngp/issues/198)) |
+| __编译错误：__ 对“cudaGraphExecUpdate”的未定义引用/标识符“cublasSetWorkspace”未定义 | 将CUDA安装（可能是11.0）更新到11.3或更高版本。([#34](https://github.com/NVlabs/instant-ngp/issues/34) [#41](https://github.com/NVlabs/instant-ngp/issues/41) [#42](https://github.com/NVlabs/instant-ngp/issues/42)) |
+| __编译错误：__ 函数调用中参数太少 | 使用上述两个`git`命令更新子模块。([#37](https://github.com/NVlabs/instant-ngp/issues/37) [#52](https://github.com/NVlabs/instant-ngp/issues/52)) |
+| __Python错误：__ 没有名为'pyngp'的模块 | 可能是因为CMake没有检测到您的Python安装，因此没有构建`pyngp`。检查CMake日志以验证此问题。如果`pyngp`在与`build`不同的文件夹中构建，Python将无法检测到它，您必须提供完整的导入语句的路径。([#43](https://github.com/NVlabs/instant-ngp/issues/43)) |
 
-If you cannot find your problem in the table, try searching [the discussions board](https://github.com/NVlabs/instant-ngp/discussions) and [the issues area](https://github.com/NVlabs/instant-ngp/issues?q=is%3Aissue) for help. If you are still stuck, please [open an issue](https://github.com/NVlabs/instant-ngp/issues/new) and ask for help.
+如果在表中找不到您的问题，请尝试在[讨论区](https://github.com/NVlabs/instant-ngp/discussions)和[问题区](https://github.com/NVlabs/instant-ngp/issues?q=is%3Aissue)中搜索以获取帮助。如果您仍然遇到困难，请[提交问题](https://github.com/NVlabs/instant-ngp/issues/new)寻求帮助。
 
-## Thanks
+## 鸣谢
 
-Many thanks to [Jonathan Tremblay](https://research.nvidia.com/person/jonathan-tremblay) and [Andrew Tao](https://developer.nvidia.com/blog/author/atao/) for testing early versions of this codebase and to Arman Toorians and Saurabh Jain for the factory robot dataset.
-We also thank [Andrew Webb](https://github.com/grey-area) for noticing that one of the prime numbers in the spatial hash was not actually prime; this has been fixed since.
+非常感谢[Jonathan Tremblay](https://research.nvidia.com/person/jonathan-tremblay)和[Andrew Tao](https://developer.nvidia.com/blog/author/atao/)在测试此代码库的早期版本时的贡献，以及Arman Toorians和Saurabh Jain提供的工厂机器人数据集。
+我们还感谢[Andrew Webb](https://github.com/grey-area)注意到空间哈希中的一个质数实际上不是质数；这个问题已经得到修复。
 
-This project makes use of a number of awesome open source libraries, including:
-* [tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn) for fast CUDA networks and input encodings
-* [tinyexr](https://github.com/syoyo/tinyexr) for EXR format support
-* [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader) for OBJ format support
-* [stb_image](https://github.com/nothings/stb) for PNG and JPEG support
-* [Dear ImGui](https://github.com/ocornut/imgui) an excellent immediate mode GUI library
-* [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) a C++ template library for linear algebra
-* [pybind11](https://github.com/pybind/pybind11) for seamless C++ / Python interop
-* and others! See the `dependencies` folder.
+本项目使用了许多令人印象深刻的开源库，包括：
+* [tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn) 用于快速的CUDA网络和输入编码
+* [tinyexr](https://github.com/syoyo/tinyexr) 支持EXR格式
+* [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader) 支持OBJ格式
+* [stb_image](https://github.com/nothings/stb) 支持PNG和JPEG
+* [Dear ImGui](https://github.com/ocornut/imgui) 优秀的即时模式GUI库
+* [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) 用于线性代数的C++模板库
+* [pybind11](https://github.com/pybind/pybind11) 用于无缝的C++ / Python互操作性
+* 其他！请查看`dependencies`文件夹。
 
-Many thanks to the authors of these brilliant projects!
+感谢这些出色项目的作者们！
 
-## License and Citation
+## 许可和引用
 
 ```bibtex
 @article{mueller2022instant,
@@ -357,6 +350,6 @@ Many thanks to the authors of these brilliant projects!
 }
 ```
 
-Copyright © 2022, NVIDIA Corporation. All rights reserved.
+版权所有 © 2022，NVIDIA Corporation。保留所有权利。
 
-This work is made available under the Nvidia Source Code License-NC. Click [here](LICENSE.txt) to view a copy of this license.
+本作品根据Nvidia源代码许可-NC授权。点击[这里](LICENSE.txt)查看此许可的副本。
