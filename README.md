@@ -16,6 +16,13 @@
 
 ## 安装
 
+
+务必使用此命令下载完整代码
+
+```git
+git clone --recursive https://github.com/ShaySheng/instant-ngp.git
+```
+
 如果您使用的是Windows操作系统，请下载与您的显卡对应的以下发布版本，并进行解压。然后，启动`instant-ngp.exe`。
 
 - [**RTX 3000和4000系列、RTX A4000-A6000**和其他Ampere和Ada显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-RTX-3000-and-4000.zip)
