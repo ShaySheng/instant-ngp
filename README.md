@@ -20,9 +20,7 @@
 
 - [**RTX 3000和4000系列、RTX A4000-A6000**和其他Ampere和Ada显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-RTX-3000-and-4000.zip)
 - [**RTX 2000系列、Titan RTX、Quadro RTX 4000-8000**和其他图灵显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-RTX-2000.zip)
-- [**GTX 1000系列、Titan Xp、Quadro P1000-P6000**和其他
-
-帕斯卡显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-GTX-1000.zip)
+- [**GTX 1000系列、Titan Xp、Quadro P1000-P6000**和其他帕斯卡显卡](https://github.com/NVlabs/instant-ngp/releases/download/continuous/Instant-NGP-for-GTX-1000.zip)
 
 继续阅读以了解应用程序的导览，或者如果您有兴趣创建自己的NeRF，请观看[视频教程](https://www.youtube.com/watch?v=3TWxO1PftMc)或阅读[书面说明](docs/nerf_dataset_tips.md)。
 
@@ -194,9 +192,7 @@ instant-ngp$ cmake . -B build
 instant-ngp$ cmake --build build --config RelWithDebInfo -j
 ```
 
-如果编译失败或耗时超过一个小时，请检查是否内存不足。在这种情况下，尝试不使用`-j`运行上述命
-
-令。
+如果编译失败或耗时超过一个小时，请检查是否内存不足。在这种情况下，尝试不使用`-j`运行上述命令。
 如果问题仍然存在，请在报告问题之前，请参考[此处的可能解决方法列表](https://github.com/NVlabs/instant-ngp#troubleshooting-compile-errors)。
 
 如果编译成功，现在您可以通过`./instant-ngp`可执行文件或下面描述的`scripts/run.py`脚本来运行代码。
