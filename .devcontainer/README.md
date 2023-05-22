@@ -1,8 +1,8 @@
 ## VS Code Dev Container
 
-> Basic dev container for running Instant Neural Graphics Primitives without GUI.
+> 无 GUI 运行 Instant Neural Graphics Primitives 的基本开发容器。
 
-### Requirements
+### 要求
 
 -   #### **[Docker](https://www.docker.com/get-started)**
 
@@ -10,7 +10,7 @@
 
 -   #### **[Docker VS Code Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)**
 
-### How to build
+### 构建步骤
 
 ```sh
 cmake -DNGP_BUILD_WITH_GUI=off ./ -B ./build
