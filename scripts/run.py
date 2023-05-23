@@ -1,199 +1,292 @@
 #!/usr/bin/env python3
 
-# Copyright (c) 2020-2022, NVIDIA CORPORATION.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-
-import argparse
+# 导入所需的模块
+import argparse # 用于解析命令行参数的模块
 import os
 import commentjson as json
 
 import numpy as np
 
-import shutil
+import shutil # 用于文件和文件夹操作的模块
 import time
 
 from common import *
 from scenes import *
 
-from tqdm import tqdm
+from tqdm import tqdm # 用于创建进度条的模块
 
 import pyngp as ngp # noqa
 
 def parse_args():
+    # 创建解析命令行参数的解析器
     parser = argparse.ArgumentParser(description="Run instant neural graphics primitives with additional configuration & output options")
 
+    # 定义命令行参数，如文件、场景、网络配置、快照等
     parser.add_argument("files", nargs="*", help="Files to be loaded. Can be a scene, network config, snapshot, camera path, or a combination of those.")
-
+    # "files" 是一个可变位置参数，接受多个文件名作为输入。这些文件可以是场景、网络配置、快照或相机路径等。
+    
     parser.add_argument("--scene", "--training_data", default="", help="The scene to load. Can be the scene's name or a full path to the training data. Can be NeRF dataset, a *.obj/*.stl mesh for training a SDF, an image, or a *.nvdb volume.")
+    # "--scene" 或 "--training_data" 是一个可选参数，用于指定要加载的场景。它可以是场景的名称或训练数据的完整路径。
+    # 场景可以是 NeRF 数据集、用于训练 SDF 的 *.obj/*.stl 网格、图像或 *.nvdb 体积数据。
+    
     parser.add_argument("--mode", default="", type=str, help=argparse.SUPPRESS) # deprecated
     parser.add_argument("--network", default="", help="Path to the network config. Uses the scene's default if unspecified.")
-
+    # "--network" 是一个可选参数，用于指定网络配置的路径。如果未指定，则使用场景的默认配置。
+    
     parser.add_argument("--load_snapshot", "--snapshot", default="", help="Load this snapshot before training. recommended extension: .ingp/.msgpack")
+    # "--load_snapshot" 或 "--snapshot" 是一个可选参数，用于指定训练之前要加载的快照。推荐使用 .ingp/.msgpack 扩展名。
+    
     parser.add_argument("--save_snapshot", default="", help="Save this snapshot after training. recommended extension: .ingp/.msgpack")
-
+    # "--save_snapshot" 是一个可选参数，用于指定训练之后要保存的快照。推荐使用 .ingp/.msgpack 扩展名。
+    
     parser.add_argument("--nerf_compatibility", action="store_true", help="Matches parameters with original NeRF. Can cause slowness and worse results on some scenes, but helps with high PSNR on synthetic scenes.")
+    # "--nerf_compatibility" 是一个可选的布尔参数，当指定时，会使参数与原始 NeRF 论文中的参数相匹配。
+    # 这可能会导致在某些场景下速度较慢且结果较差，但对于合成场景的高 PSNR 值有帮助。
+    
     parser.add_argument("--test_transforms", default="", help="Path to a nerf style transforms json from which we will compute PSNR.")
+    # "--test_transforms" 是一个可选参数，用于指定 nerf 风格的变换 JSON 文件的路径，用于计算 PSNR。
+    
     parser.add_argument("--near_distance", default=-1, type=float, help="Set the distance from the camera at which training rays start for nerf. <0 means use ngp default")
+    # "--near_distance" 是一个可选参数，用于设置训练射线从相机开始的距离。小于 0 表示使用 ngp 的默认值。
+    
     parser.add_argument("--exposure", default=0.0, type=float, help="Controls the brightness of the image. Positive numbers increase brightness, negative numbers decrease it.")
-
+    # "--exposure" 是一个可选参数，用于控制图像的亮度。正数增加亮度，负数减少亮度。
+    
     parser.add_argument("--screenshot_transforms", default="", help="Path to a nerf style transforms.json from which to save screenshots.")
+    # "--screenshot_transforms" 是一个可选参数，用于指定保存截图时使用的 nerf 风格变换的 JSON 文件的路径。
+
     parser.add_argument("--screenshot_frames", nargs="*", help="Which frame(s) to take screenshots of.")
+    # "--screenshot_frames" 是一个可选参数，用于指定要截图的帧的编号。
+
     parser.add_argument("--screenshot_dir", default="", help="Which directory to output screenshots to.")
+    # "--screenshot_dir" 是一个可选参数，用于指定保存截图的目录。
+
     parser.add_argument("--screenshot_spp", type=int, default=16, help="Number of samples per pixel in screenshots.")
+    # "--screenshot_spp" 是一个可选参数，用于指定截图中每个像素的采样次数。
 
     parser.add_argument("--video_camera_path", default="", help="The camera path to render, e.g., base_cam.json.")
+    # "--video_camera_path" 是一个可选参数，用于指定要渲染的相机路径，例如 base_cam.json。
+
     parser.add_argument("--video_camera_smoothing", action="store_true", help="Applies additional smoothing to the camera trajectory with the caveat that the endpoint of the camera path may not be reached.")
+    # "--video_camera_smoothing" 是一个可选参数，当指定时，对相机轨迹应用额外的平滑处理，但要注意可能无法到达相机路径的终点。
+
     parser.add_argument("--video_fps", type=int, default=60, help="Number of frames per second.")
+    # "--video_fps" 是一个可选参数，用于指定每秒的帧数。
+
     parser.add_argument("--video_n_seconds", type=int, default=1, help="Number of seconds the rendered video should be long.")
+    # "--video_n_seconds" 是一个可选参数，用于指定渲染视频的时长（秒数）。
+
     parser.add_argument("--video_render_range", type=int, nargs=2, default=(-1, -1), metavar=("START_FRAME", "END_FRAME"), help="Limit output to frames between START_FRAME and END_FRAME (inclusive)")
+    # "--video_render_range" 是一个可选参数，用于限制输出的帧范围（包括起始帧和结束帧）。
+
     parser.add_argument("--video_spp", type=int, default=8, help="Number of samples per pixel. A larger number means less noise, but slower rendering.")
+    # "--video_spp" 是一个可选参数，用于指定每个像素的采样次数。较大的值意味着更少的噪点，但渲染速度较慢。
+
     parser.add_argument("--video_output", type=str, default="video.mp4", help="Filename of the output video (video.mp4) or video frames (video_%%04d.png).")
+    # "--video_output" 是一个可选参数，用于指定输出视频的文件名（video.mp4）或视频帧（video_%%04d.png）。
 
     parser.add_argument("--save_mesh", default="", help="Output a marching-cubes based mesh from the NeRF or SDF model. Supports OBJ and PLY format.")
+    # "--save_mesh" 是一个可选参数，用于将基于 Marching Cubes 的网格输出从 NeRF 或 SDF 模型中。支持 OBJ 和 PLY 格式。
+
     parser.add_argument("--marching_cubes_res", default=256, type=int, help="Sets the resolution for the marching cubes grid.")
+    # "--marching_cubes_res" 是一个可选参数，用于设置 Marching Cubes 网格的分辨率。
 
     parser.add_argument("--width", "--screenshot_w", type=int, default=0, help="Resolution width of GUI and screenshots.")
+    # "--width" 或 "--screenshot_w" 是一个可选参数，用于指定 GUI 和截图的分辨率宽度。
+
     parser.add_argument("--height", "--screenshot_h", type=int, default=0, help="Resolution height of GUI and screenshots.")
+    # "--height" 或 "--screenshot_h" 是一个可选参数，用于指定 GUI 和截图的分辨率高度。
 
     parser.add_argument("--gui", action="store_true", help="Run the testbed GUI interactively.")
+    # "--gui" 是一个可选参数，当指定时，以交互方式运行测试界面。
+
     parser.add_argument("--train", action="store_true", help="If the GUI is enabled, controls whether training starts immediately.")
+    # "--train" 是一个可选参数，当启用 GUI 时，控制是否立即开始训练。
+
     parser.add_argument("--n_steps", type=int, default=-1, help="Number of steps to train for before quitting.")
+    # "--n_steps" 是一个可选参数，用于指定在退出之前进行的训练步数。
+
     parser.add_argument("--second_window", action="store_true", help="Open a second window containing a copy of the main output.")
+    # "--second_window" 是一个可选参数，当指定时，打开包含主输出副本的第二个窗口。
+
     parser.add_argument("--vr", action="store_true", help="Render to a VR headset.")
+    # "--vr" 是一个可选参数，当指定时，渲染到 VR 头显。
 
     parser.add_argument("--sharpen", default=0, help="Set amount of sharpening applied to NeRF training images. Range 0.0 to 1.0.")
+    # "--sharpen" 是一个可选参数，用于设置应用于 NeRF 训练图像的锐化程度。范围从 0.0 到 1.0。
 
 
+    # 返回解析后的命令行参数结果
     return parser.parse_args()
 
 def get_scene(scene):
+    # 遍历场景列表
     for scenes in [scenes_sdf, scenes_nerf, scenes_image, scenes_volume]:
+        # 检查给定的场景是否在当前场景列表中
         if scene in scenes:
+            # 如果是，则返回对应的场景信息
             return scenes[scene]
+    # 如果未找到对应的场景，返回None
     return None
 
+
 if __name__ == "__main__":
+    # 解析命令行参数
     args = parse_args()
+
     if args.vr: # VR implies having the GUI running at the moment
+        # 如果启用 VR 模式，则同时启用 GUI 模式
         args.gui = True
 
     if args.mode:
+        # 提示警告：'--mode' 参数不再使用，它不起作用。模式会根据场景自动选择。
         print("Warning: the '--mode' argument is no longer in use. It has no effect. The mode is automatically chosen based on the scene.")
 
+    # 创建测试实例
     testbed = ngp.Testbed()
     testbed.root_dir = ROOT_DIR
 
     for file in args.files:
+        # 获取场景信息
         scene_info = get_scene(file)
         if scene_info:
+            # 如果找到场景信息，则加载对应的文件
             file = os.path.join(scene_info["data_dir"], scene_info["dataset"])
         testbed.load_file(file)
 
     if args.scene:
+        # 获取场景信息
         scene_info = get_scene(args.scene)
         if scene_info is not None:
+            # 如果找到场景信息，则设置场景和网络路径
             args.scene = os.path.join(scene_info["data_dir"], scene_info["dataset"])
             if not args.network and "network" in scene_info:
                 args.network = scene_info["network"]
 
+        # 加载训练数据
         testbed.load_training_data(args.scene)
 
     if args.gui:
-        # Pick a sensible GUI resolution depending on arguments.
+        # 根据参数选择合适的 GUI 分辨率
         sw = args.width or 1920
         sh = args.height or 1080
         while sw * sh > 1920 * 1080 * 4:
             sw = int(sw / 2)
             sh = int(sh / 2)
+        # 初始化窗口
         testbed.init_window(sw, sh, second_window=args.second_window)
         if args.vr:
+            # 如果启用 VR 模式，则初始化 VR
             testbed.init_vr()
 
 
     if args.load_snapshot:
+        # 如果指定了快照文件路径，则获取快照文件所对应的场景信息
         scene_info = get_scene(args.load_snapshot)
         if scene_info is not None:
+            # 如果找到了场景信息，则使用默认的快照文件名
             args.load_snapshot = default_snapshot_filename(scene_info)
+        # 加载快照文件
         testbed.load_snapshot(args.load_snapshot)
     elif args.network:
+        # 如果指定了网络配置文件路径，则重新加载网络配置
         testbed.reload_network_from_file(args.network)
 
     ref_transforms = {}
     if args.screenshot_transforms: # try to load the given file straight away
+        # 如果指定了截屏变换文件路径，则尝试直接加载给定的文件
         print("Screenshot transforms from ", args.screenshot_transforms)
         with open(args.screenshot_transforms) as f:
             ref_transforms = json.load(f)
 
     if testbed.mode == ngp.TestbedMode.Sdf:
+        # 如果测试模式是 SDF，则设置色调映射曲线为 ACES
         testbed.tonemap_curve = ngp.TonemapCurve.ACES
 
     testbed.nerf.sharpen = float(args.sharpen)
+    # 设置 NeRF 训练图像的锐化程度
+
     testbed.exposure = args.exposure
+    # 设置图像的曝光值
+
     testbed.shall_train = args.train if args.gui else True
+    # 如果启用了 GUI 模式，则根据参数决定是否进行训练，否则始终进行训练
 
 
     testbed.nerf.render_with_lens_distortion = True
+    # 启用镜头畸变的渲染模式
 
     network_stem = os.path.splitext(os.path.basename(args.network))[0] if args.network else "base"
+    # 获取网络配置文件的文件名（不带扩展名）
+
     if testbed.mode == ngp.TestbedMode.Sdf:
+        # 如果测试模式是 SDF，则根据参数设置彩色 SDF
         setup_colored_sdf(testbed, args.scene)
 
     if args.near_distance >= 0.0:
+        # 如果指定了 NeRF 训练射线的近距离，则设置近距离参数
         print("NeRF training ray near_distance ", args.near_distance)
         testbed.nerf.training.near_distance = args.near_distance
 
     if args.nerf_compatibility:
+        # 如果启用了 NeRF 兼容模式
         print(f"NeRF compatibility mode enabled")
 
-        # Prior nerf papers accumulate/blend in the sRGB
-        # color space. This messes not only with background
-        # alpha, but also with DOF effects and the likes.
-        # We support this behavior, but we only enable it
-        # for the case of synthetic nerf data where we need
-        # to compare PSNR numbers to results of prior work.
+        # 先前的NeRF论文在sRGB颜色空间中进行累积/混合计算。
+        # 这不仅会影响背景的透明度，还会影响景深效果等。
+        # 我们支持这种行为，但只在合成的NeRF数据的情况下启用，
+        # 这样我们才能将PSNR数值与先前的工作结果进行比较。
+        # 将颜色空间设置为 sRGB，用于与先前的 NeRF 论文中的结果进行比较
         testbed.color_space = ngp.ColorSpace.SRGB
 
-        # No exponential cone tracing. Slightly increases
-        # quality at the cost of speed. This is done by
-        # default on scenes with AABB 1 (like the synthetic
-        # ones), but not on larger scenes. So force the
-        # setting here.
+        # 禁用指数锥追踪。稍微提高质量但降低速度。
+        # 这在具有AABB 1（如合成场景）的场景中默认启用，
+        # 但在较大的场景中不启用。因此在这里强制设置。
         testbed.nerf.cone_angle_constant = 0
-
-        # Match nerf paper behaviour and train on a fixed bg.
+        
+        # 模拟 NeRF 论文中的行为，固定背景进行训练
         testbed.nerf.training.random_bg_color = False
 
     old_training_step = 0
-    n_steps = args.n_steps
+    # 用于存储上一次训练步数的变量
 
-    # If we loaded a snapshot, didn't specify a number of steps, _and_ didn't open a GUI,
-    # don't train by default and instead assume that the goal is to render screenshots,
-    # compute PSNR, or render a video.
+    n_steps = args.n_steps
+    # 从命令行参数中获取训练步数
+
+    # 如果加载了快照、未指定训练步数，并且没有打开GUI，
+    # 默认不进行训练，而是假设目标是渲染截屏、计算PSNR或生成视频。
     if n_steps < 0 and (not args.load_snapshot or args.gui):
         n_steps = 35000
+        # 默认的训练步数为 35000
 
     tqdm_last_update = 0
+    # 用于记录上次更新进度条的时间戳
+
     if n_steps > 0:
+        # 如果设置了训练步数大于0
         with tqdm(desc="Training", total=n_steps, unit="steps") as t:
+            # 创建进度条并设置总步数
             while testbed.frame():
+                # 在每一帧进行训练
+
                 if testbed.want_repl():
                     repl(testbed)
-                # What will happen when training is done?
+                    # 如果需要进入交互式命令行，则执行repl函数
+
+                # 当训练步数达到指定步数时会发生什么？
                 if testbed.training_step >= n_steps:
                     if args.gui:
                         testbed.shall_train = False
+                        # 如果启用了GUI，则停止训练
                     else:
                         break
+                        # 否则跳出训练循环
 
-                # Update progress bar
+                # 更新进度条
                 if testbed.training_step < old_training_step or old_training_step == 0:
                     old_training_step = 0
                     t.reset()
+                    # 当训练步数回溯或为0时，重置进度条
 
                 now = time.monotonic()
                 if now - tqdm_last_update > 0.1:
@@ -201,9 +294,15 @@ if __name__ == "__main__":
                     t.set_postfix(loss=testbed.loss)
                     old_training_step = testbed.training_step
                     tqdm_last_update = now
+                    # 更新进度条并设置显示的训练损失和步数
 
     if args.save_snapshot:
         testbed.save_snapshot(args.save_snapshot, False)
+        # 如果指定了保存快照的路径，则保存当前的快照
+
+
+
+
 
     if args.test_transforms:
         print("Evaluating test transforms from ", args.test_transforms)
