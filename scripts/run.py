@@ -300,43 +300,55 @@ if __name__ == "__main__":
         testbed.save_snapshot(args.save_snapshot, False)
         # 如果指定了保存快照的路径，则保存当前的快照
 
-
-
-
-
     if args.test_transforms:
+        # 如果指定了测试转换文件路径
         print("Evaluating test transforms from ", args.test_transforms)
+        # 打印正在评估的测试转换文件路径
         with open(args.test_transforms) as f:
             test_transforms = json.load(f)
+            # 加载测试转换文件并存储为test_transforms变量
         data_dir=os.path.dirname(args.test_transforms)
+        # 获取测试转换文件所在的目录路径
         totmse = 0
         totpsnr = 0
         totssim = 0
         totcount = 0
         minpsnr = 1000
         maxpsnr = 0
+        # 用于存储计算的指标结果，包括总的MSE、PSNR、SSIM，以及最小和最大PSNR的初始值
 
-        # Evaluate metrics on black background
+        # 在黑色背景上评估指标
         testbed.background_color = [0.0, 0.0, 0.0, 1.0]
 
-        # Prior nerf papers don't typically do multi-sample anti aliasing.
-        # So snap all pixels to the pixel centers.
+        # Prior nerf papers通常不进行多样本抗锯齿。
+        # 因此将所有像素对齐到像素中心。
         testbed.snap_to_pixel_centers = True
         spp = 8
+        # 设置每像素采样数
 
         testbed.nerf.render_min_transmittance = 1e-4
+        # 设置最小传输率，用于渲染
 
         testbed.shall_train = False
+        # 不进行训练
         testbed.load_training_data(args.test_transforms)
+        # 加载测试转换数据
 
         with tqdm(range(testbed.nerf.training.dataset.n_images), unit="images", desc=f"Rendering test frame") as t:
+            # 创建带有进度条的循环，用于渲染测试帧
             for i in t:
                 resolution = testbed.nerf.training.dataset.metadata[i].resolution
+                # 获取当前测试帧的分辨率
                 testbed.render_ground_truth = True
+                # 渲染带有真实图像的测试帧
                 testbed.set_camera_to_training_view(i)
+                # 将相机设置为训练视图
                 ref_image = testbed.render(resolution[0], resolution[1], 1, True)
+                # 渲染参考图像
                 testbed.render_ground_truth = False
+                # 不再渲染带有真实图像的测试帧
                 image = testbed.render(resolution[0], resolution[1], spp, True)
+                # 渲染当前测试帧的图像
 
                 if i == 0:
                     write_image(f"ref.png", ref_image)
@@ -345,90 +357,143 @@ if __name__ == "__main__":
                     diffimg = np.absolute(image - ref_image)
                     diffimg[...,3:4] = 1.0
                     write_image("diff.png", diffimg)
+                    # 如果是第一帧，将参考图像、当前图像和它们的差异图像写入文件
 
                 A = np.clip(linear_to_srgb(image[...,:3]), 0.0, 1.0)
                 R = np.clip(linear_to_srgb(ref_image[...,:3]), 0.0, 1.0)
+                # 将图像数据转换为sRGB颜色空间，并进行裁剪，使其在0到1之间
                 mse = float(compute_error("MSE", A, R))
                 ssim = float(compute_error("SSIM", A, R))
+                # 计算图像之间的MSE和SSIM
                 totssim += ssim
                 totmse += mse
                 psnr = mse2psnr(mse)
                 totpsnr += psnr
                 minpsnr = psnr if psnr<minpsnr else minpsnr
                 maxpsnr = psnr if psnr>maxpsnr else maxpsnr
+                # 更新计算指标的累加值和最小/最大PSNR值
                 totcount = totcount+1
                 t.set_postfix(psnr = totpsnr/(totcount or 1))
+                # 在进度条中显示当前的PSNR值
 
         psnr_avgmse = mse2psnr(totmse/(totcount or 1))
         psnr = totpsnr/(totcount or 1)
         ssim = totssim/(totcount or 1)
+        # 计算平均MSE、PSNR和SSIM值
         print(f"PSNR={psnr} [min={minpsnr} max={maxpsnr}] SSIM={ssim}")
+        # 打印PSNR、最小/最大PSNR和SSIM的结果
+
 
     if args.save_mesh:
+        # 如果指定了保存网格的路径
         res = args.marching_cubes_res or 256
+        # 设置网格分辨率，默认为256
         print(f"Generating mesh via marching cubes and saving to {args.save_mesh}. Resolution=[{res},{res},{res}]")
+        # 打印生成网格并保存的信息，包括保存路径和分辨率
         testbed.compute_and_save_marching_cubes_mesh(args.save_mesh, [res, res, res])
+        # 通过Marching Cubes算法生成网格，并保存到指定路径
 
     if ref_transforms:
+        # 如果存在参考转换
         testbed.fov_axis = 0
+        # 设置视场角轴为0
         testbed.fov = ref_transforms["camera_angle_x"] * 180 / np.pi
+        # 根据参考转换中的相机角度设置视场角
         if not args.screenshot_frames:
             args.screenshot_frames = range(len(ref_transforms["frames"]))
+        # 如果没有指定截图帧数，则设置为参考转换中的所有帧
         print(args.screenshot_frames)
+        # 打印截图帧数
         for idx in args.screenshot_frames:
+            # 遍历截图帧数
             f = ref_transforms["frames"][int(idx)]
+            # 获取对应索引的帧
             cam_matrix = f["transform_matrix"]
+            # 获取帧的相机矩阵
             testbed.set_nerf_camera_matrix(np.matrix(cam_matrix)[:-1,:])
+            # 将相机矩阵设置为NeRF相机矩阵
             outname = os.path.join(args.screenshot_dir, os.path.basename(f["file_path"]))
+            # 设置输出文件名，包括路径和基于文件路径的名称
 
             # Some NeRF datasets lack the .png suffix in the dataset metadata
+            # 一些NeRF数据集在数据集元数据中缺少.png后缀
             if not os.path.splitext(outname)[1]:
                 outname = outname + ".png"
+                # 如果文件名没有后缀，则添加.png后缀
 
             print(f"rendering {outname}")
+            # 打印正在渲染的图像路径
             image = testbed.render(args.width or int(ref_transforms["w"]), args.height or int(ref_transforms["h"]), args.screenshot_spp, True)
+            # 渲染图像
             os.makedirs(os.path.dirname(outname), exist_ok=True)
+            # 创建输出文件夹
             write_image(outname, image)
+            # 将图像写入文件
     elif args.screenshot_dir:
+        # 如果存在截图目录
         outname = os.path.join(args.screenshot_dir, args.scene + "_" + network_stem)
+        # 设置输出文件名，包括截图目录、场景和网络名称
         print(f"Rendering {outname}.png")
+        # 打印正在渲染的图像路径
         image = testbed.render(args.width or 1920, args.height or 1080, args.screenshot_spp, True)
+        # 渲染图像
         if os.path.dirname(outname) != "":
             os.makedirs(os.path.dirname(outname), exist_ok=True)
+        # 创建输出文件夹
         write_image(outname + ".png", image)
+        # 将图像写入文件
 
     if args.video_camera_path:
+        # 如果指定了视频相机路径
         testbed.load_camera_path(args.video_camera_path)
+        # 加载视频相机路径
 
         resolution = [args.width or 1920, args.height or 1080]
+        # 设置分辨率，默认为1920x1080
         n_frames = args.video_n_seconds * args.video_fps
+        # 计算视频帧数，根据视频时长和帧率计算得出
         save_frames = "%" in args.video_output
+        # 判断是否保存为帧图像
         start_frame, end_frame = args.video_render_range
+        # 设置起始帧和结束帧的范围
 
         if "tmp" in os.listdir():
             shutil.rmtree("tmp")
+        # 检查临时目录是否存在，如果存在则删除
         os.makedirs("tmp")
+        # 创建临时目录
 
         for i in tqdm(list(range(min(n_frames, n_frames+1))), unit="frames", desc=f"Rendering video"):
+            # 遍历帧数进行视频渲染
             testbed.camera_smoothing = args.video_camera_smoothing
+            # 设置相机平滑参数
 
             if start_frame >= 0 and i < start_frame:
-                # For camera smoothing and motion blur to work, we cannot just start rendering
-                # from middle of the sequence. Instead we render a very small image and discard it
-                # for these initial frames.
-                # TODO Replace this with a no-op render method once it's available
+                # 如果起始帧大于等于0且当前帧小于起始帧
+                # 为了使相机平滑和运动模糊起作用，我们不能从序列的中间开始渲染。
+                # 相反，我们渲染一个非常小的图像并将其丢弃，对于这些初始帧来说。
+                # TODO 一旦可用，将此替换为无操作的渲染方法
                 frame = testbed.render(32, 32, 1, True, float(i)/n_frames, float(i + 1)/n_frames, args.video_fps, shutter_fraction=0.5)
+                # 渲染一个非常小的图像，并将其丢弃
                 continue
             elif end_frame >= 0 and i > end_frame:
+                # 如果结束帧大于等于0且当前帧大于结束帧
                 continue
+                # 跳过当前帧
 
             frame = testbed.render(resolution[0], resolution[1], args.video_spp, True, float(i)/n_frames, float(i + 1)/n_frames, args.video_fps, shutter_fraction=0.5)
+            # 渲染图像帧
             if save_frames:
+                # 如果保存为帧图像
                 write_image(args.video_output % i, np.clip(frame * 2**args.exposure, 0.0, 1.0), quality=100)
+                # 将图像帧写入文件
             else:
                 write_image(f"tmp/{i:04d}.jpg", np.clip(frame * 2**args.exposure, 0.0, 1.0), quality=100)
+                # 将图像帧写入临时目录
 
         if not save_frames:
             os.system(f"ffmpeg -y -framerate {args.video_fps} -i tmp/%04d.jpg -c:v libx264 -pix_fmt yuv420p {args.video_output}")
+            # 使用ffmpeg将临时目录中的图像帧合成为视频
 
         shutil.rmtree("tmp")
+        # 删除临时目录
