@@ -28,6 +28,20 @@ def parse_args():
     parser.add_argument("--scene", "--training_data", default="", help="The scene to load. Can be the scene's name or a full path to the training data. Can be NeRF dataset, a *.obj/*.stl mesh for training a SDF, an image, or a *.nvdb volume.")
     # "--scene" 或 "--training_data" 是一个可选参数，用于指定要加载的场景。它可以是场景的名称或训练数据的完整路径。
     # 场景可以是 NeRF 数据集、用于训练 SDF 的 *.obj/*.stl 网格、图像或 *.nvdb 体积数据。
+    # *.obj（Wavefront OBJ）:
+    # OBJ是一种文本文件格式，广泛用于存储三维模型的几何信息（顶点、面、法线等）。
+    # OBJ文件可以包含模型的几何数据以及材质和纹理信息。它是一种非常简单和易于理解的格式，
+    # 可以通过文本编辑器进行查看和编辑。OBJ文件通常使用顶点索引和纹理坐标来定义三角面片，
+    # 它在计算机图形学和3D建模领域中被广泛支持和使用。
+    # *.stl（Stereolithography or Standard Tessellation Language）:
+    # STL是一种二进制或文本文件格式，用于表示三维模型的表面几何信息。
+    # 它由一系列的三角面片组成，每个面片由三个顶点和一个法线向量定义。
+    # STL文件通常用于三维打印和计算机辅助设计（CAD）应用中，它可以精确地描述模型的外部形状。
+    # *.nvdb（NVIDIA Voxel Database）:
+    # NVDB是由NVIDIA开发的一种文件格式，用于表示三维体素数据。
+    # 体素是三维空间中的离散点，可以看作是三维像素。NVDB文件存储了体素的位置和属性信息，
+    # 可以用于表示复杂的三维对象，如体积数据、医学图像和仿真模型。
+    # NVDB文件在科学可视化、医学成像和计算机图形学中得到广泛应用。
     
     parser.add_argument("--mode", default="", type=str, help=argparse.SUPPRESS) # deprecated
     parser.add_argument("--network", default="", help="Path to the network config. Uses the scene's default if unspecified.")
@@ -35,6 +49,7 @@ def parse_args():
     
     parser.add_argument("--load_snapshot", "--snapshot", default="", help="Load this snapshot before training. recommended extension: .ingp/.msgpack")
     # "--load_snapshot" 或 "--snapshot" 是一个可选参数，用于指定训练之前要加载的快照。推荐使用 .ingp/.msgpack 扩展名。
+    # snapshot, 即模型的权重（参数）
     
     parser.add_argument("--save_snapshot", default="", help="Save this snapshot after training. recommended extension: .ingp/.msgpack")
     # "--save_snapshot" 是一个可选参数，用于指定训练之后要保存的快照。推荐使用 .ingp/.msgpack 扩展名。
@@ -45,6 +60,9 @@ def parse_args():
     
     parser.add_argument("--test_transforms", default="", help="Path to a nerf style transforms json from which we will compute PSNR.")
     # "--test_transforms" 是一个可选参数，用于指定 nerf 风格的变换 JSON 文件的路径，用于计算 PSNR。
+    # 如 data/nerf/fox/transforms.json
+    # test_transforms vs screenshot_transforms
+    # 前者是train训练时使用必填，后者是inference渲染截图时使用可选
     
     parser.add_argument("--near_distance", default=-1, type=float, help="Set the distance from the camera at which training rays start for nerf. <0 means use ngp default")
     # "--near_distance" 是一个可选参数，用于设置训练射线从相机开始的距离。小于 0 表示使用 ngp 的默认值。
@@ -52,36 +70,29 @@ def parse_args():
     parser.add_argument("--exposure", default=0.0, type=float, help="Controls the brightness of the image. Positive numbers increase brightness, negative numbers decrease it.")
     # "--exposure" 是一个可选参数，用于控制图像的亮度。正数增加亮度，负数减少亮度。
     
+    # 渲染图片的参数
     parser.add_argument("--screenshot_transforms", default="", help="Path to a nerf style transforms.json from which to save screenshots.")
     # "--screenshot_transforms" 是一个可选参数，用于指定保存截图时使用的 nerf 风格变换的 JSON 文件的路径。
-
     parser.add_argument("--screenshot_frames", nargs="*", help="Which frame(s) to take screenshots of.")
     # "--screenshot_frames" 是一个可选参数，用于指定要截图的帧的编号。
-
     parser.add_argument("--screenshot_dir", default="", help="Which directory to output screenshots to.")
     # "--screenshot_dir" 是一个可选参数，用于指定保存截图的目录。
-
     parser.add_argument("--screenshot_spp", type=int, default=16, help="Number of samples per pixel in screenshots.")
     # "--screenshot_spp" 是一个可选参数，用于指定截图中每个像素的采样次数。
 
+    # 渲染视频的参数
     parser.add_argument("--video_camera_path", default="", help="The camera path to render, e.g., base_cam.json.")
     # "--video_camera_path" 是一个可选参数，用于指定要渲染的相机路径，例如 base_cam.json。
-
     parser.add_argument("--video_camera_smoothing", action="store_true", help="Applies additional smoothing to the camera trajectory with the caveat that the endpoint of the camera path may not be reached.")
     # "--video_camera_smoothing" 是一个可选参数，当指定时，对相机轨迹应用额外的平滑处理，但要注意可能无法到达相机路径的终点。
-
     parser.add_argument("--video_fps", type=int, default=60, help="Number of frames per second.")
     # "--video_fps" 是一个可选参数，用于指定每秒的帧数。
-
     parser.add_argument("--video_n_seconds", type=int, default=1, help="Number of seconds the rendered video should be long.")
     # "--video_n_seconds" 是一个可选参数，用于指定渲染视频的时长（秒数）。
-
     parser.add_argument("--video_render_range", type=int, nargs=2, default=(-1, -1), metavar=("START_FRAME", "END_FRAME"), help="Limit output to frames between START_FRAME and END_FRAME (inclusive)")
     # "--video_render_range" 是一个可选参数，用于限制输出的帧范围（包括起始帧和结束帧）。
-
     parser.add_argument("--video_spp", type=int, default=8, help="Number of samples per pixel. A larger number means less noise, but slower rendering.")
     # "--video_spp" 是一个可选参数，用于指定每个像素的采样次数。较大的值意味着更少的噪点，但渲染速度较慢。
-
     parser.add_argument("--video_output", type=str, default="video.mp4", help="Filename of the output video (video.mp4) or video frames (video_%%04d.png).")
     # "--video_output" 是一个可选参数，用于指定输出视频的文件名（video.mp4）或视频帧（video_%%04d.png）。
 
@@ -168,6 +179,9 @@ if __name__ == "__main__":
 
     if args.gui:
         # 根据参数选择合适的 GUI 分辨率
+        # 'or' 是一个逻辑运算符，用于逻辑或操作。它的工作方式如下：
+        # 如果左侧的表达式结果为真（非零、非空、非空字符串等），则返回左侧表达式的值。
+        # 如果左侧的表达式结果为假（0、空、空字符串等），则返回右侧表达式的值。
         sw = args.width or 1920
         sh = args.height or 1080
         while sw * sh > 1920 * 1080 * 4:
@@ -497,3 +511,31 @@ if __name__ == "__main__":
 
         shutil.rmtree("tmp")
         # 删除临时目录
+
+"""在提供的代码中，`testbed` 对象具有一些内置函数、类和变量。以下是其中的一些示例：
+
+内置函数：
+- `load_file(file)`: 加载文件到 testbed 中，可以是场景、网络配置、快照或相机路径等文件。
+- `load_training_data(scene)`: 加载指定场景的训练数据。
+- `init_window(width, height, second_window=False)`: 初始化 testbed 窗口，指定宽度和高度。可选参数 `second_window` 决定是否打开第二个窗口。
+- `init_vr()`: 初始化 VR 模式的 testbed。
+- `load_snapshot(snapshot_file)`: 加载快照文件到 testbed。
+- `reload_network_from_file(network_file)`: 重新加载指定文件中的网络配置。
+- `set_nerf_camera_matrix(camera_matrix)`: 基于提供的矩阵设置 NeRF 相机矩阵。
+- `render(width, height, spp, include_alpha)`: 渲染图像，指定宽度、高度、每像素采样次数（spp）以及是否包含 alpha 通道。
+- `compute_and_save_marching_cubes_mesh(mesh_file, resolution)`: 基于 NeRF 或 SDF 模型计算并保存 Marching Cubes 网格。
+- `load_camera_path(camera_path_file)`: 从指定文件加载相机路径。
+
+内置类：
+- `Testbed`: 主要的测试实例类，用于加载数据、渲染图像、训练模型等。
+
+内置变量：
+- `root_dir`: 根目录路径。
+- `mode`: 测试模式，例如 SDF、NeRF 等。
+- `loss`: 当前的训练损失。
+- `exposure`: 图像的曝光值。
+- `shall_train`: 是否进行训练的标志。
+- `nerf`: NeRF 模型实例。
+
+这些是基于提供的代码片段中的示例。根据实际实现和代码的自定义情况，可能还有其他内置函数、类和变量可用。
+"""
